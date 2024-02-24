@@ -3,6 +3,10 @@ import os
 import pandas as pd
 import numpy as np
 import category_encoders as ce
+import warnings
+from sklearn import preprocessing
+
+warnings.filterwarnings("ignore")
 
 # System path
 parent_dir = os.getcwd()
@@ -45,7 +49,6 @@ def save_data(data, output_path, file_type="csv"):
 
 def preprocess_data(data):
     
-    # Columns - User  Card  Year  Month  Day   Time   Amount           Use Chip        Merchant Name  Merchant City Merchant State      Zip   MCC Errors? Is Fraud?
     # Rename columns
     data.rename(columns={'User':'user',
                          'Card':'card', 
@@ -69,13 +72,9 @@ def preprocess_data(data):
     # Create merchant_id (Node)
     data.rename(columns={'merchant_name':'merchant_id'}, inplace=True)
     
-    # Define categorical columns
-    categorical_columns = ['zip', 'MCC']
-    for column in categorical_columns:
-        data[column] = data[column].astype('category')
-        
+       
     # Dealing with Date and time variables
-    data['time'] = pd.to_datetime(data['time'])
+    data['time'] = pd.to_datetime(data['time'], format='%H:%M')
     data['hour'] = data['time'].dt.hour
     data['minute'] = data['time'].dt.minute
     data.drop('time', axis=1, inplace=True)    
@@ -94,16 +93,27 @@ def preprocess_data(data):
     
     # drop null values
     data = data.dropna(subset=['zip', 'MCC'])
-    
+
+    # Define categorical columns
+    categorical_columns = ['zip', 'MCC', 'merchant_city', 'merchant_state', 'merchant_id', 'card_id']
+    for column in categorical_columns:
+        data[column] = data[column].astype('category')
     # target encoding high cardinality columns
-    high_cardinality = ['zip', 'merchant_id', 'merchant_city', 'merchant_state']
-    target_encoder = ce.TargetEncoder(cols=high_cardinality)
-    data = target_encoder.fit_transform(data, data['is_fraud'])
+    high_cardinality = ['zip', 'merchant_id', 'merchant_city', 'merchant_state','MCC']
+    for column in high_cardinality:
+        target_encoder = ce.TargetEncoder()
+        data[column] = target_encoder.fit_transform(data[column], data['is_fraud'])
     
     # # Clearning columns names 
-    col = ["errors_Bad CVV,","errors_Bad Card Number,","errors_Bad Expiration,","errors_Bad PIN,","errors_Bad Zipcode,","errors_Insufficient Balance,","errors_Technical Glitch,"]
-    rename_mapping = {name: name.rstrip(",") for name in col}
+    rename_cols = ["errors_Bad CVV,","errors_Bad Card Number,","errors_Bad Expiration,","errors_Bad PIN,","errors_Bad Zipcode,","errors_Insufficient Balance,","errors_Technical Glitch,"]
+    rename_mapping = {name: name.rstrip(",") for name in rename_cols}
     data.rename(columns=rename_mapping, inplace=True)
+    
+    # Normalize the data
+    scale_columns = ['year', 'month', 'day','amount','hour', 'minute']
+    scaler = preprocessing.StandardScaler()
+    data[scale_columns] = scaler.fit_transform(data[scale_columns])
+    
     return data
     
 def main():
@@ -125,10 +135,18 @@ def main():
     data_path = os.path.join(parent_dir, args.data_path) if args.data_path == default_data_path else args.data_path
     output_path = os.path.join(parent_dir, args.output_path) if args.output_path == default_output_path else args.output_path
     try:
+        # Read data and display the first few rows
         data = read_data(data_path=data_path, file_type=args.file_type)
         print(data.head())
+
+        # Preprocess the data
         data_processed = preprocess_data(data)
         
+        # Print the shape of the data before and after processing
+        print(f"Data shape before processing: {data.shape}")
+        print(f"Data shape after processing: {data_processed.shape}")
+        
+        # Save the processed data
         save_data(data=data_processed, output_path=output_path, file_type=args.file_type)
         print(f"Data successfully processed and saved to {output_path}")
     
