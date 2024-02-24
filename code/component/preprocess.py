@@ -2,6 +2,7 @@ import argparse
 import os
 import pandas as pd
 import numpy as np
+import category_encoders as ce
 
 # System path
 parent_dir = os.getcwd()
@@ -56,7 +57,9 @@ def preprocess_data(data):
                          'Use Chip':'use_chip', 
                          'Merchant Name':'merchant_name', 
                          'Merchant City':'merchant_city', 
-                         'Merchant State':'merchant_state', 
+                         'Merchant State':'merchant_state',
+                         'Zip':'zip', 
+                         'Errors?':'errors',
                          'Is Fraud?':'is_fraud'}, inplace=True)
     
     # Create card_id (Node)
@@ -66,6 +69,41 @@ def preprocess_data(data):
     # Create merchant_id (Node)
     data.rename(columns={'merchant_name':'merchant_id'}, inplace=True)
     
+    # Define categorical columns
+    categorical_columns = ['zip', 'MCC']
+    for column in categorical_columns:
+        data[column] = data[column].astype('category')
+        
+    # Dealing with Date and time variables
+    data['time'] = pd.to_datetime(data['time'])
+    data['hour'] = data['time'].dt.hour
+    data['minute'] = data['time'].dt.minute
+    data.drop('time', axis=1, inplace=True)    
+
+    # Clean Amount column
+    data['amount'] = data['amount'].str.replace('$', '')
+    data['amount'] = data['amount'].astype('float')
+            
+    # One-hot encode categorical columns
+    data = pd.get_dummies(data, columns=['errors'], dtype=int)
+    data = pd.get_dummies(data, columns=['use_chip'], dtype=int)
+    
+        
+    # Convert is_fraud to binary
+    data['is_fraud'] = data['is_fraud'].map({'Yes': 1, 'No': 0})
+    
+    # drop null values
+    data = data.dropna(subset=['zip', 'MCC'])
+    
+    # target encoding high cardinality columns
+    high_cardinality = ['zip', 'merchant_id', 'merchant_city', 'merchant_state']
+    target_encoder = ce.TargetEncoder(cols=high_cardinality)
+    data = target_encoder.fit_transform(data, data['is_fraud'])
+    
+    # # Clearning columns names 
+    col = ["errors_Bad CVV,","errors_Bad Card Number,","errors_Bad Expiration,","errors_Bad PIN,","errors_Bad Zipcode,","errors_Insufficient Balance,","errors_Technical Glitch,"]
+    rename_mapping = {name: name.rstrip(",") for name in col}
+    data.rename(columns=rename_mapping, inplace=True)
     return data
     
 def main():
@@ -99,4 +137,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
