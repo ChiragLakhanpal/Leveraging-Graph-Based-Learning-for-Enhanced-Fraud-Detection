@@ -5,9 +5,12 @@ from sklearn.model_selection import train_test_split
 import torch
 from torch_geometric.data import Data, HeteroData
 import torch_geometric.transforms as T
+from torch_geometric.loader import NeighborSampler
+#from torch_sparse import SparseTensor
 from class_GNN import GCN,GAT,GnnTrainer,MetricManager
 from preprocess import preprocess_data
 
+import argparse
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -87,6 +90,12 @@ def main():
     data_train = data_train.to(device)
     print(data_train)
 
+    # train_loader = NeighborSampler(
+    #     data_train.edge_index,
+    #     sizes = [10,10],
+    #     batch_size=128
+    # )
+
     print("Number of nodes: ", data_train.num_nodes)
     print("Number of edges: ", data_train.num_edges)
     print("Number of features per node: ", data_train.num_node_features)
@@ -98,13 +107,22 @@ def main():
     data_train.valid_idx = valid_idx
 
     # Set training arguments
-    args= {"epochs":100, 'lr':0.01, 'weight_decay':1e-5, 'heads':2, 'hidden_dim': 128, 'dropout': 0.5}
+    args= {"epochs": 10, 'lr':0.01, 'weight_decay':1e-5, 'heads':2, 'hidden_dim': 128, 'dropout': 0.5}
     num_nodes = node_features_t.shape[1]
-    net = "GCN"
 
-    if net == "GAT":
-        model = GCN(num_nodes = num_nodes).to(device)
-    else:
+    # Initialize the argument parser
+    parser = argparse.ArgumentParser(description='Specify network architecture')
+
+    # Add argument for specifying the network architecture
+    parser.add_argument('--net', type=str, default='GCN', choices=['GCN', 'GAT'],
+                        help='Network architecture (GCN or GAT)')
+
+    # Parse the command-line arguments
+    arg = parser.parse_args()
+    # Now you can access the selected network architecture using args.net
+    if arg.net == "GCN":
+        model = GCN(num_nodes=num_nodes).to(device)
+    elif arg.net == "GAT":
         model = GAT(data_train.num_node_features, args['hidden_dim'], 1, args).to(device)
 
     # Setup training settings
