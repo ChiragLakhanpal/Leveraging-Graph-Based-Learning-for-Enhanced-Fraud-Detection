@@ -5,6 +5,7 @@ import numpy as np
 import category_encoders as ce
 import warnings
 from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
 
 warnings.filterwarnings("ignore")
 
@@ -109,13 +110,19 @@ def preprocess_data(data):
     rename_mapping = {name: name.rstrip(",") for name in rename_cols}
     data.rename(columns=rename_mapping, inplace=True)
     
-    # Normalize the data
-    scale_columns = ['year', 'month', 'day','amount','hour', 'minute']
-    scaler = preprocessing.StandardScaler()
-    data[scale_columns] = scaler.fit_transform(data[scale_columns])
-    
     return data
     
+def split_data(X, y, data=None, test_size=0.2):
+    """Split the data into train and test sets."""
+    try:
+        if data is not None and 'is_fraud' in data:
+            return train_test_split(X, y, test_size=test_size, random_state=42, stratify=data['is_fraud'])
+        else:
+            return train_test_split(X, y, test_size=test_size, random_state=42)
+    except Exception as e:
+        raise Exception(f"Error splitting data: {e}")
+
+        
 def main():
     parser = argparse.ArgumentParser(description="Preprocess data")
 
@@ -123,12 +130,13 @@ def main():
     default_data_path = "Data/Raw Data/data.csv"
     default_output_path = "Data/Processed Data/data.csv"
 
-    parser.add_argument("--data_path", type=str, default=default_data_path,
+    parser.add_argument("--data_path", type=str, default=default_data_path, 
                         help=f"Path to the data file. Default: {default_data_path}")
     parser.add_argument("--output_path", type=str, default=default_output_path,
                         help=f"Path to the output file. Default: {default_output_path}")
     parser.add_argument("--file_type", type=str, default="csv",
                         help="Type of the file to be read. Options: csv, parquet, xls, etc. Default: csv")
+    parser.add_argument('--test_size', type=float, default=0.2, help='Size of the test set. Default: 0.2')
 
     args = parser.parse_args()
 
