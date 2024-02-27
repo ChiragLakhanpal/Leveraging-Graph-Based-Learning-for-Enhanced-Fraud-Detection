@@ -8,6 +8,7 @@ import warnings
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 
+
 warnings.filterwarnings("ignore")
 
 # System path
@@ -91,9 +92,20 @@ def preprocess_data(data):
     # Convert is_fraud to binary
     data = data.with_columns(pl.when(pl.col('is_fraud') == 'Yes').then(1).otherwise(0).alias('is_fraud'))
 
-    # drop null values
-    data = data.filter(~pl.col('zip').is_null() & ~pl.col('MCC').is_null())
+    # data = data.filter(~pl.col('zip').is_null() & ~pl.col('MCC').is_null())
 
+    # Impute missing values of zip and MCC with mode
+
+    data = data.with_columns(pl.when(pl.col('zip').is_null())
+                            .then(data['zip'].mode()[0])
+                            .otherwise(pl.col('zip'))
+                            .alias('zip'))
+
+    data = data.with_columns(pl.when(pl.col('MCC').is_null())
+                            .then(data['MCC'].mode()[0])
+                            .otherwise(pl.col('MCC'))
+                            .alias('MCC'))    
+    
     # Define categorical columns
     for column in ['zip', 'MCC', 'merchant_city', 'merchant_state', 'merchant_id', 'card_id']:
         data = data.with_columns(pl.col(column).cast(pl.Utf8).cast(pl.Categorical))        
