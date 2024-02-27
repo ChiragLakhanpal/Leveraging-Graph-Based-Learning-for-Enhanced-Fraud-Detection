@@ -5,8 +5,7 @@ from sklearn.model_selection import train_test_split
 import torch
 from torch_geometric.data import Data, HeteroData
 import torch_geometric.transforms as T
-from torch_geometric.loader import NeighborSampler
-#from torch_sparse import SparseTensor
+from torch_geometric.loader import NeighborSampler,DataLoader
 from class_GNN import GCN,GAT,GnnTrainer,MetricManager
 from preprocess import preprocess_data
 
@@ -15,7 +14,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def main():
-    df_raw = pd.read_csv("card_transaction.v1.csv", nrows=1000000)
+    df_raw = pd.read_csv("../../Data/card_transaction.v1.csv", nrows=1000000)
 
     # Preprocess the data
     df = preprocess_data(df_raw)
@@ -90,12 +89,6 @@ def main():
     data_train = data_train.to(device)
     print(data_train)
 
-    # train_loader = NeighborSampler(
-    #     data_train.edge_index,
-    #     sizes = [10,10],
-    #     batch_size=128
-    # )
-
     print("Number of nodes: ", data_train.num_nodes)
     print("Number of edges: ", data_train.num_edges)
     print("Number of features per node: ", data_train.num_node_features)
@@ -107,7 +100,7 @@ def main():
     data_train.valid_idx = valid_idx
 
     # Set training arguments
-    args= {"epochs": 10, 'lr':0.01, 'weight_decay':1e-5, 'heads':2, 'hidden_dim': 128, 'dropout': 0.5}
+    args= {"epochs": 20, 'lr':0.01, 'weight_decay':1e-5, 'heads':2, 'hidden_dim': 128, 'dropout': 0.5}
     num_nodes = node_features_t.shape[1]
 
     # Initialize the argument parser
