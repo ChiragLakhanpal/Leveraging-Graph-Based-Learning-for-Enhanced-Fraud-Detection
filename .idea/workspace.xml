@@ -5,7 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="776180ab-e0b5-4551-ba9f-58c060a6d7e8" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/component/GNN.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/GNN.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/component/class_GNN.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/class_GNN.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,10 +62,14 @@
       <workItem from="1708893981600" duration="3215000" />
       <workItem from="1708968071904" duration="121000" />
       <workItem from="1708986415806" duration="1021000" />
+      <workItem from="1708991680261" duration="2999000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Capstone$GNN.coverage" NAME="GNN Coverage Results" MODIFIED="1708994237876" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
   </component>
 </project>

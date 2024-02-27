@@ -90,7 +90,7 @@ class GnnTrainer(object):
             val_acc, val_f1, val_f1macro, val_aucroc, val_recall, val_precision, val_cm = self.metric_manager.store_metrics(
                 "val", pred_scores, target_labels)
 
-            if epoch % 5 == 0:
+            if epoch % 1 == 0:
                 print(
                     "epoch: {} - loss: {:.4f} - accuracy train: {:.4f} -accuracy valid: {:.4f}  - val roc: {:.4f}  - val f1micro: {:.4f}".format(
                         epoch, loss.item(), train_acc, val_acc, val_aucroc, val_f1))

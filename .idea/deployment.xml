@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="ec2-user@3.88.108.113:22 key" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
       <paths name="AWS_Cloud_Connection">
         <serverdata>
@@ -26,10 +26,11 @@
       <paths name="ec2-user@3.88.108.113:22 key">
         <serverdata>
           <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/home/ec2-user/DS_Capstone" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
     </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
   </component>
 </project>
