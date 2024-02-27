@@ -1,5 +1,6 @@
 import argparse 
 import os
+import polars as pl
 import pandas as pd
 import numpy as np
 import category_encoders as ce
@@ -16,17 +17,19 @@ def read_data(data_path, file_type="csv"):
     """Read data from the specified path and file type."""
     try:
         if file_type == "csv":
-            return pd.read_csv(data_path)
+            return pl.read_csv(data_path)
         elif file_type == "parquet":
-            return pd.read_parquet(data_path)
+            return pl.read_parquet(data_path)
         elif file_type == "xls" or file_type == "xlsx":
-            return pd.read_excel(data_path)
+            pd_df = pd.read_excel(data_path)
+            return pl.from_pandas(pd_df)
         else:
             raise ValueError(f"Unsupported file type: {file_type}")
     except FileNotFoundError:
         raise FileNotFoundError(f"File not found at specified path: {data_path}")
     except Exception as e:
         raise Exception(f"Error reading {data_path}: {e}")
+
 
 def save_data(data, output_path, file_type="csv"):
     """Save preprocessed data to the specified path and file type."""
@@ -35,23 +38,25 @@ def save_data(data, output_path, file_type="csv"):
     
     # Ensure the directory exists
     os.makedirs(output_dir, exist_ok=True)
-        
+    
     try:
         if file_type == "csv":
-            data.to_csv(output_path, index=False)
+            data.write_csv(output_path)
         elif file_type == "parquet":
-            data.to_parquet(output_path, index=False)
+            data.write_parquet(output_path)
         elif file_type == "xls" or file_type == "xlsx":
-            data.to_excel(output_path, index=False)
+            pd_df = data.to_pandas()
+            pd_df.to_excel(output_path, index=False)
         else:
-            data.to_csv(output_path, index=False) 
+            data.write_csv(output_path)
     except Exception as e:
         raise Exception(f"Error saving data to {output_path}: {e}")
+
 
 def preprocess_data(data):
     
     # Rename columns
-    data.rename(columns={'User':'user',
+    data = data.rename({'User':'user',
                          'Card':'card', 
                          'Year':'year',
                          'Month':'month',
@@ -59,57 +64,54 @@ def preprocess_data(data):
                          'Time':'time',
                          'Amount':'amount',
                          'Use Chip':'use_chip', 
-                         'Merchant Name':'merchant_name', 
+                         'Merchant Name':'merchant_id', 
                          'Merchant City':'merchant_city', 
                          'Merchant State':'merchant_state',
                          'Zip':'zip', 
                          'Errors?':'errors',
-                         'Is Fraud?':'is_fraud'}, inplace=True)
+                         'Is Fraud?':'is_fraud'})
     
     # Create card_id (Node)
-    data['card_id'] = data['user'].astype(str) + data['card'].astype(str)
-    data = data.drop(['user', 'card'], axis=1)
-    
-    # Create merchant_id (Node)
-    data.rename(columns={'merchant_name':'merchant_id'}, inplace=True)
-    
+    data = data.with_columns((pl.col('user').cast(str) + pl.col('card').cast(str)).alias('card_id'))
+    data = data.drop(['user', 'card'])
        
     # Dealing with Date and time variables
-    data['time'] = pd.to_datetime(data['time'], format='%H:%M')
-    data['hour'] = data['time'].dt.hour
-    data['minute'] = data['time'].dt.minute
-    data.drop('time', axis=1, inplace=True)    
-
-    # Clean Amount column
-    data['amount'] = data['amount'].str.replace('$', '')
-    data['amount'] = data['amount'].astype('float')
-            
-    # One-hot encode categorical columns
-    data = pd.get_dummies(data, columns=['errors'], dtype=int)
-    data = pd.get_dummies(data, columns=['use_chip'], dtype=int)
+    data = data.with_columns([
+            pl.col('time').str.strptime(pl.Datetime, format='%H:%M').dt.hour().alias('hour'),
+            pl.col('time').str.strptime(pl.Datetime, format='%H:%M').dt.minute().alias('minute')
+        ]).drop('time')   
     
+    # Clean Amount column
+    data = data.with_columns(pl.col('amount').str.replace(r'\$', '').cast(pl.Float64).alias('amount'))
+    
+    # One-hot encode categorical columns
+    data = data.to_dummies("use_chip", drop_first=True)
+    data = data.to_dummies("errors", drop_first=True)
         
     # Convert is_fraud to binary
-    data['is_fraud'] = data['is_fraud'].map({'Yes': 1, 'No': 0})
-    
+    data = data.with_columns(pl.when(pl.col('is_fraud') == 'Yes').then(1).otherwise(0).alias('is_fraud'))
+
     # drop null values
-    data = data.dropna(subset=['zip', 'MCC'])
+    data = data.filter(~pl.col('zip').is_null() & ~pl.col('MCC').is_null())
 
     # Define categorical columns
-    categorical_columns = ['zip', 'MCC', 'merchant_city', 'merchant_state', 'merchant_id', 'card_id']
-    for column in categorical_columns:
-        data[column] = data[column].astype('category')
+    for column in ['zip', 'MCC', 'merchant_city', 'merchant_state', 'merchant_id', 'card_id']:
+        data = data.with_columns(pl.col(column).cast(pl.Utf8).cast(pl.Categorical))        
+        
     # target encoding high cardinality columns
-    high_cardinality = ['zip', 'merchant_id', 'merchant_city', 'merchant_state','MCC']
+    high_cardinality = ['zip', 'merchant_city', 'merchant_state','MCC']
+    
     for column in high_cardinality:
-        target_encoder = ce.TargetEncoder()
-        data[column] = target_encoder.fit_transform(data[column], data['is_fraud'])
-    
-    # # Clearning columns names 
-    rename_cols = ["errors_Bad CVV,","errors_Bad Card Number,","errors_Bad Expiration,","errors_Bad PIN,","errors_Bad Zipcode,","errors_Insufficient Balance,","errors_Technical Glitch,"]
-    rename_mapping = {name: name.rstrip(",") for name in rename_cols}
-    data.rename(columns=rename_mapping, inplace=True)
-    
+        # Calculate the mean of 'is_fraud' 
+        mean_encoded = data.groupby(column).agg(pl.col('is_fraud').mean().alias('target_encoded'))
+        
+        data = data.join(mean_encoded, on=column, how='left')
+        
+        data = data.drop(column).rename({'target_encoded': column})
+
+    # Apply the renaming
+    data = data.rename({col: col.rstrip(",") for col in data.columns if ',' in col})
+
     return data
     
 def split_data(X, y, data=None, test_size=0.2):
