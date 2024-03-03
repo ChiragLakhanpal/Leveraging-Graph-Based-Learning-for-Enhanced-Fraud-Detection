@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
+import polars as pl
 from sklearn.model_selection import train_test_split
+import uuid
 
 import torch
 from torch_geometric.data import Data, HeteroData
@@ -14,110 +16,151 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def main():
-    df_raw = pd.read_csv("../../Data/card_transaction.v1.csv", nrows=1000000)
+    data = pl.read_csv('/home/ec2-user/Capstone/card_transaction.v1.csv')
 
-    # Preprocess the data
-    df = preprocess_data(df_raw)
-    print(df)
+    data_processed = preprocess_data(data)
 
-    # Create a dataframe for edges
-    df_edges = df[["card_id", "merchant_id"]].copy()
+    data_processed = data_processed.to_pandas()
 
-    # Create a dataframe merge with node features ids and classes
+    data_processed = data_processed.sample(n=50000).reset_index(drop=True)
 
-    df_card = df.drop(["merchant_id"], axis=1)
-    df_card = df_card.rename(columns={"card_id": "id"})
+    # %%
+    # Assign a unique id to each row
+    data_processed['id'] = [uuid.uuid4() for _ in range(len(data_processed))]
 
-    df_merchant = df.drop(["card_id"], axis=1)
-    df_merchant = df_merchant.rename(columns={"merchant_id": "id"})
+    # To make 'id' the first column, you can use DataFrame reindex with columns sorted to your preference
+    cols = ['id'] + [col for col in data_processed.columns if col != 'id']
+    data_processed = data_processed[cols]
 
-    df_merge = pd.concat([df_card, df_merchant]).reset_index(drop=True)
-    print(df.merge)
+    # %%
+    # Create label dataset for GNN model with id and label columns
+    df_classes = data_processed[['id', 'is_fraud']]
 
-    # Setup transaction ID to node ID mapping
-    nodes = df_merge["id"].values
+    # %%
+    # Create features dataset for GNN model with id and features columns
 
-    # Mapping nodes to indexes
-    map_id = {j: i for i, j in enumerate(nodes)}
+    df_features = data_processed.drop(columns=['is_fraud', 'merchant_id', 'card_id'])
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # %%
+    # Create edges dataset for GNN model with source and target columns
+    user_to_transactions = data_processed.groupby('card_id')['id'].apply(list).to_dict()
 
-    # Create edge dataframe that has transaction ID mapped to nodeIDs
+    # %%
+    edges_list = []
+
+    for transactions in user_to_transactions.values():
+        if len(transactions) > 1:
+            for i in range(len(transactions)):
+                for j in range(i + 1, len(transactions)):
+                    # Append both directions of the edge to the list
+                    edges_list.append({'source': transactions[i], 'target': transactions[j]})
+                    edges_list.append({'source': transactions[j], 'target': transactions[i]})
+
+    # Create the DataFrame from the list of edge dictionaries
+    df_edges = pd.DataFrame(edges_list)
+
+    # %%
+    df_merge = df_features.merge(df_classes, how='left', on='id')
+    df_merge = df_merge.sort_values('id').reset_index(drop=True)
+    df_merge.head()
+
+    # %%
+    import torch
+    import torch_geometric
+
+    # Setup trans ID to node ID mapping
+    nodes = df_merge['id'].values
+
+    map_id = {j: i for i, j in enumerate(nodes)}  # mapping nodes to indexes
+
+    # Create edge df that has transID mapped to nodeIDs
     edges = df_edges.copy()
-    edges.card_id = edges.card_id.map(map_id)
-    edges.merchant_id = edges.merchant_id.map(map_id)
+    edges.source = edges.source.map(map_id)  # get nodes idx1 from edges list and filtered data
+    edges.target = edges.target.map(map_id)
+
     edges = edges.astype(int)
 
-    # Create an edge_index tensor
-    edge_index = np.array(edges.values).T
-    edge_index = torch.tensor(edge_index, dtype=torch.long).contiguous()
+    edge_index = np.array(edges.values).T  # convert into an array
+    edge_index = torch.tensor(edge_index, dtype=torch.long).contiguous()  # create a tensor
 
-    print("Shape of edge index is {}".format(edge_index.shape))
-    print("Edge index tensor")
-    print(edge_index)
+    print("shape of edge index is {}".format(edge_index.shape))
+    edge_index
 
+    # %%
     # Define labels
     labels = df_merge['is_fraud'].values
-    print("Unique Labels", np.unique(labels))
-    print("Labels Array")
-    print(labels)
+    print("lables", np.unique(labels))
+    labels
 
-    # Mapping txIds to corresponding indices, to pass node features to the model
+    # %%
+    # mapping txIds to corresponding indices, to pass node features to the model
+
     node_features = df_merge.drop(['id'], axis=1).copy()
-    print(node_features)
-    print("Unique classes in node features=", node_features["is_fraud"].unique())
+    # node_features[0] = node_features[0].map(map_id) # Convert transaction ID to node ID \
+    print("unique=", node_features["is_fraud"].unique())
 
-    # Get node features index
+    # Retain known vs unknown IDs
     classified_idx = node_features.index
 
-    # Drop unwanted columns
+    #classified_illicit_idx = node_features['is_fraud'].loc[node_features['is_fraud'] == 1].index  # filter on illicit labels
+    #classified_licit_idx = node_features['is_fraud'].loc[node_features['is_fraud'] == 0].index  # filter on licit labels
+
+    # Drop unwanted columns, 0 = transID, 1=time period, class = labels
     node_features = node_features.drop(columns=['is_fraud'])
 
     # Convert to tensor
-    node_features_t = torch.tensor(np.array(node_features.values, dtype=np.double), dtype=torch.float)
-    print("Node features tensor")
+    node_features_t = torch.tensor(np.array(node_features.values, dtype=np.double),
+                                   dtype=torch.float)  # drop unused columns
     print(node_features_t)
 
-    # Train val splits
-    train_idx, valid_idx = train_test_split(classified_idx.values, test_size=0.2)
+    # %%
+    from preprocess import split_data
+
+    # Create a known vs unknown mask
+    train_idx, valid_idx = train_test_split(classified_idx.values, test_size=0.15)
     print("train_idx size {}".format(len(train_idx)))
     print("test_idx size {}".format(len(valid_idx)))
 
-    # Creating a PyG Dataset
-    data_train = Data(x=node_features_t, edge_index=edge_index, y=torch.tensor(labels, dtype=torch.float))
-    data_train = T.ToUndirected()(data_train)
-    data_train = data_train.to(device)
+    # %%
+    from torch_geometric.data import Data
+    import torch_geometric.transforms as T
+
+    data_train = Data(x=node_features_t, edge_index=edge_index,
+                      y=torch.tensor(labels, dtype=torch.float))
     print(data_train)
 
-    print("Number of nodes: ", data_train.num_nodes)
-    print("Number of edges: ", data_train.num_edges)
-    print("Number of features per node: ", data_train.num_node_features)
-    print("Number of edge types: ", data_train.num_edge_types)
-    print("Shape of edge_index: ", data_train.edge_index.shape)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    data_train = T.ToUndirected()(data_train)
+    data_train = data_train.to(device)
 
     # Add in the train and valid idx
     data_train.train_idx = train_idx
     data_train.valid_idx = valid_idx
 
+    # %%
+    from class_GNN import GCN, GAT, GnnTrainer, MetricManager
+
     # Set training arguments
-    args= {"epochs": 20, 'lr':0.01, 'weight_decay':1e-5, 'heads':2, 'hidden_dim': 128, 'dropout': 0.5}
+    args = {"epochs": 20, 'lr': 0.01, 'weight_decay': 1e-5, 'heads': 2, 'hidden_dim': 128, 'dropout': 0.5}
     num_nodes = node_features_t.shape[1]
 
-    # Initialize the argument parser
-    parser = argparse.ArgumentParser(description='Specify network architecture')
+    # # Initialize the argument parser
+    # parser = argparse.ArgumentParser(description='Specify network architecture')
 
-    # Add argument for specifying the network architecture
-    parser.add_argument('--net', type=str, default='GCN', choices=['GCN', 'GAT'],
-                        help='Network architecture (GCN or GAT)')
+    # # Add argument for specifying the network architecture
+    # parser.add_argument('--net', type=str, default='GCN', choices=['GCN', 'GAT'],
+    #                     help='Network architecture (GCN or GAT)')
 
-    # Parse the command-line arguments
-    arg = parser.parse_args()
-    # Now you can access the selected network architecture using args.net
-    if arg.net == "GCN":
-        model = GCN(num_nodes=num_nodes).to(device)
-    elif arg.net == "GAT":
-        model = GAT(data_train.num_node_features, args['hidden_dim'], 1, args).to(device)
+    # # Parse the command-line arguments
+    # arg = parser.parse_args()
+    # # Now you can access the selected network architecture using args.net
+    # if arg.net == "GCN":
+    #     model = GCN(num_nodes=num_nodes).to(device)
+    # elif arg.net == "GAT":
+    #     model = GAT(data_train.num_node_features, args['hidden_dim'], 1, args).to(device)
 
+    model = GCN(num_nodes=num_nodes).to(device)
     # Setup training settings
     optimizer = torch.optim.Adam(model.parameters(), lr=args['lr'], weight_decay=args['weight_decay'])
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
