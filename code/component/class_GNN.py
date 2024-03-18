@@ -1,12 +1,46 @@
 import pickle
 import numpy as np
+import polars as pl
+import pandas as pd
 import torch
+import uuid
 from torch_geometric.nn import GCNConv,GATConv
+
 from torch.nn import Linear
 import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
 from sklearn.metrics import roc_auc_score
+from preprocess import preprocess_data
+
+import numpy as np
+import pandas as pd
+import polars as pl
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_curve, confusion_matrix, roc_auc_score, auc, precision_recall_curve
+import uuid
+import prettytable
+
+import torch
+from torch_geometric.data import Data, HeteroData
+import torch_geometric.transforms as T
+from torch_geometric.loader import NeighborSampler,DataLoader
+from torch_geometric.loader import NeighborLoader
+from preprocess import preprocess_data
+
+import argparse
+import warnings
+warnings.filterwarnings("ignore")
+
+# def CustomDataLoader(data):
+#
+#     train_loader = NeighborLoader(data,num_neighbors=[15,10], batch_size=128,directed=False, shuffle=True)
+#
+#     val_loader = NeighborLoader(data,num_neighbors=[15,10], batch_size=128,directed=False, shuffle=True)
+#
+#     test_loader = NeighborLoader(data,num_neighbors=[15,10], batch_size=128,directed=False, shuffle=True)
+#
+#     return train_loader, val_loader, test_loader
 
 # GCNConv Class
 class GCN(torch.nn.Module):
@@ -14,16 +48,15 @@ class GCN(torch.nn.Module):
         super(GCN, self).__init__()
         torch.manual_seed(12345)
         self.conv1 = GCNConv(num_nodes, 8)
-        self.conv2 = GCNConv(8, 2)
+        self.conv2 = GCNConv(8,2)
         self.classifier = Linear(2, 1)
 
     def forward(self, data, adj=None):
         x, edge_index = data.x, data.edge_index
         h = self.conv1(x, edge_index)
-        h = h.tanh()
+        h = F.relu(h)
         h1 = self.conv2(h, edge_index)
-        embeddings = h1.tanh()  # Final GNN embedding space.
-
+        embeddings = F.relu(h1)  # Final GNN embedding space.
         # Apply a final (linear) classifier.
         out = self.classifier(embeddings)
 
@@ -62,11 +95,13 @@ class GnnTrainer(object):
         self.model = model
         self.metric_manager = MetricManager(modes=["train", "val"])
 
-    def train(self, data_train, optimizer, criterion, scheduler, args):
+    def train(self,data_train,optimizer, criterion, scheduler,args):
 
         #self.data_train = train_loader
         for epoch in range(args['epochs']):
             self.model.train()
+
+            
             optimizer.zero_grad()
             out = self.model(data_train)
 
@@ -85,6 +120,7 @@ class GnnTrainer(object):
 
             # validation data
             self.model.eval()
+            
             target_labels = data_train.y.detach().cpu().numpy()[data_train.valid_idx]
             pred_scores = out.detach().cpu().numpy()[data_train.valid_idx]
             val_acc, val_f1, val_f1macro, val_aucroc, val_recall, val_precision, val_cm = self.metric_manager.store_metrics(
@@ -95,27 +131,27 @@ class GnnTrainer(object):
                     "epoch: {} - loss: {:.4f} - accuracy train: {:.4f} -accuracy valid: {:.4f}  - val roc: {:.4f}  - val f1micro: {:.4f}".format(
                         epoch, loss.item(), train_acc, val_acc, val_aucroc, val_f1))
 
-    # To predict labels
-    def predict(self, data=None, unclassified_only=True, threshold=0.5):
+
+    def predict(self,data_train,unclassified_only = True,threshold=0.5):
         # evaluate model:
         self.model.eval()
-        if data is not None:
-            self.data_train = data
-
-        out = self.model(self.data_train)
-        out = out.reshape((self.data_train.x.shape[0]))
+        
+        out = self.model(data_train)
+        out = out.reshape((data_train.x.shape[0]))
+        target_labels = data_train.y.detach().cpu().numpy()[data_train.test_idx]
 
         if unclassified_only:
-            pred_scores = out.detach().cpu().numpy()[self.data_train.test_idx]
+
+            pred_scores = out.detach().cpu().numpy()[data_train.test_idx]
         else:
             pred_scores = out.detach().cpu().numpy()
 
         pred_labels = pred_scores > threshold
+        integer_data = [int(x) for x in pred_labels]
 
-        return {"pred_scores": pred_scores, "pred_labels": pred_labels}
+        return integer_data, pred_scores, target_labels
 
-        # To save metrics
-
+    # To save metrics
     def save_metrics(self, save_name, path="./save/"):
         file_to_store = open(path + save_name, "wb")
         pickle.dump(self.metric_manager, file_to_store)
@@ -125,6 +161,7 @@ class GnnTrainer(object):
 
     def save_model(self, save_name, path="./save/"):
         torch.save(self.model.state_dict(), path + save_name)
+
 
 class MetricManager(object):
     def __init__(self, modes=["train", "val"]):

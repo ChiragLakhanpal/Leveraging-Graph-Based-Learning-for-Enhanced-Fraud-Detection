@@ -26,7 +26,7 @@
       <paths name="ec2-user@3.88.108.113:22 key">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/ec2-user/DS_Capstone" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/home/ec2-user/Capstone" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
