@@ -233,11 +233,11 @@ def predict(model, data, output_path):
 def main():
 
     # Default paths
-    default_data_path = "Data/RawData/data.csv"
+    default_data_path = "Data/Sampled Dataset.csv"
     default_output_path = "Data/Predictions/XGBoost"
 
     parser = argparse.ArgumentParser(description="Preprocess data")
-    parser.add_argument('--data_path', type=str, default='Data/RawData/data.csv', 
+    parser.add_argument('--data_path', type=str, default='Data/Sampled Dataset.csv',
                       help='Path to the Raw data')
     parser.add_argument('--file_type', type=str, default='csv', 
                       help='Type of the file to be read. Options: csv, parquet, xls, etc. Default: csv')
@@ -253,7 +253,7 @@ def main():
     # data = read_data(data_path=data_path, file_type=args.file_type)
 
            
-    data = pl.read_csv('Data/Raw Data/data.csv')
+    data = pl.read_csv('/home/ec2-user/Capstone/Data/Sampled Dataset.csv')
 
     # Preprocess the data
     data_processed = preprocess_data(data)
