@@ -5,11 +5,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_curve, confusion_matrix, roc_auc_score, auc, precision_recall_curve
 import uuid
 import prettytable
+import itertools
 
 import torch
+import torch_geometric
 from torch_geometric.data import Data, HeteroData
 import torch_geometric.transforms as T
 from torch_geometric.loader import NeighborSampler,DataLoader, NeighborLoader
+
 from class_GNN import GCN,GAT,GnnTrainer,MetricManager
 from preprocess import preprocess_data
 
@@ -18,35 +21,32 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def main():
+
+    # Reading the data
     data = pl.read_csv('/home/ec2-user/Capstone/Data/Sampled Dataset.csv')
 
+    # Applying the preprocess function
     data_processed = preprocess_data(data)
-    print(data_processed.shape)
+    print("Shape of data: ", data_processed.shape)
 
     data_processed = data_processed.to_pandas()
 
     #data_processed = data_processed.sample(n=500000, random_state=42).reset_index(drop=True)
-    print(data_processed['is_fraud'].value_counts())
-    # print(data_processed.isnull().sum())
+    print("Is Fraud Value Counts", data_processed['is_fraud'].value_counts())
 
-    # %%
-    # Assign a unique id to each row
+    # Assigning a unique id to each row
     data_processed['id'] = [hash(uuid.uuid4()) for _ in range(len(data_processed))]
 
-    # To make 'id' the first column, you can use DataFrame reindex with columns sorted to your preference
+    # Making id the first column in dataframe
     cols = ['id'] + [col for col in data_processed.columns if col != 'id']
     data_processed = data_processed[cols]
 
-    # %%
-    # Create label dataset for GNN model with id and label columns
+    # Create label dataset for GNN model
     df_classes = data_processed[['id', 'is_fraud']]
 
-    # %%
     # Create features dataset for GNN model with id and features columns
 
     df_features = data_processed.drop(columns=['is_fraud', 'merchant_id', 'card_id'])
-
-    import itertools
 
     # Group transactions by card_id
     user_to_transactions = data_processed.groupby('card_id')['id'].apply(list).to_dict()
@@ -64,25 +64,12 @@ def main():
                 edges_list.append({'source': pair[0], 'target': pair[1]})
                 #edges_list.append({'source': pair[1], 'target': pair[0]})
 
-    # for transactions in user_to_transactions.values():
-    #     if len(transactions) > 1:
-    #         for i in range(len(transactions)):
-    #             for j in range(i + 1, len(transactions)):
-    #                 # Append both directions of the edge to the list
-    #                 edges_list.append({'source': transactions[i], 'target': transactions[j]})
-    #                 edges_list.append({'source': transactions[j], 'target': transactions[i]})
-
     # Create the DataFrame from the list of edge dictionaries
     df_edges = pd.DataFrame(edges_list)
 
-    # %%
     df_merge = df_features.merge(df_classes, how='left', on='id')
     df_merge = df_merge.sort_values('id').reset_index(drop=True)
     df_merge.head()
-
-    # %%
-    import torch
-    import torch_geometric
 
     # Setup trans ID to node ID mapping
     nodes = df_merge['id'].values
@@ -99,29 +86,20 @@ def main():
     edge_index = np.array(edges.values).T  # convert into an array
     edge_index = torch.tensor(edge_index, dtype=torch.long).contiguous()  # create a tensor
 
-    print("shape of edge index is {}".format(edge_index.shape))
-    edge_index
+    print("Shape of edge index is {}".format(edge_index.shape))
 
-    # %%
     # Define labels
     labels = df_merge['is_fraud'].values
-    print("lables", np.unique(labels))
-    labels
+    print("Unique Labels", np.unique(labels))
 
-    # %%
-    # mapping txIds to corresponding indices, to pass node features to the model
+    # Mapping txIds to corresponding indices, to pass node features to the model
 
     node_features = df_merge.drop(['id'], axis=1).copy()
-    # node_features[0] = node_features[0].map(map_id) # Convert transaction ID to node ID \
-    print("unique=", node_features["is_fraud"].unique())
 
     # Retain known vs unknown IDs
     classified_idx = node_features.index
 
-    # classified_illicit_idx = node_features['is_fraud'].loc[node_features['is_fraud'] == 1].index  # filter on illicit labels
-    # classified_licit_idx = node_features['is_fraud'].loc[node_features['is_fraud'] == 0].index  # filter on licit labels
-
-    # Drop unwanted columns, 0 = transID, 1=time period, class = labels
+    # Drop unwanted columns
     node_features = node_features.drop(columns=['is_fraud'])
 
     # Convert to tensor
@@ -129,21 +107,14 @@ def main():
                                    dtype=torch.float)  # drop unused columns
     print(node_features_t)
 
-    # %%
-    from preprocess import split_data
-
-    # Create a known vs unknown mask
+    # Creating a train test split
     train_idx, test_idx = train_test_split(classified_idx.values,
                                            test_size=0.2, stratify=data_processed['is_fraud'])
     train_idx, valid_idx = train_test_split(train_idx, test_size=0.2,
                                             stratify=data_processed.iloc[train_idx]['is_fraud'])
-    # train_idx, valid_idx = train_test_split(classified_idx.values, test_size=0.15)
     print("train_idx size {}".format(len(train_idx)))
-    print("test_idx size {}".format(len(valid_idx)))
-
-    # %%
-    from torch_geometric.data import Data
-    import torch_geometric.transforms as T
+    print("valid_idx size {}".format(len(valid_idx)))
+    print("test_idx size {}".format(len(test_idx)))
 
     data_train = Data(x=node_features_t, edge_index=edge_index,
                       y=torch.tensor(labels, dtype=torch.float))
@@ -181,11 +152,8 @@ def main():
     #
     # test_loader = NeighborLoader(data_train,num_neighbors=[15,10], batch_size=128,directed=False, shuffle=True)
 
-    # %%
-    from class_GNN import GCN, GAT, GnnTrainer, MetricManager
-
     # Set training arguments
-    args = {"epochs": 20, 'lr': 0.01, 'weight_decay': 1e-5, 'heads': 2, 'hidden_dim': 128, 'dropout': 0.5}
+    args = {"epochs": 50, 'lr': 0.001, 'weight_decay': 1e-5, 'heads': 2, 'hidden_dim': 128, 'dropout': 0.5}
     num_nodes = node_features_t.shape[1]
 
     # # Initialize the argument parser
@@ -206,8 +174,9 @@ def main():
     #model = GAT(data_train.num_node_features, args['hidden_dim'], 1, args).to(device)
 
     model = GCN(num_nodes=num_nodes).to(device)
+
     # Setup training settings
-    optimizer = torch.optim.Adam(model.parameters(), lr=2e-3) # weight_decay=args['weight_decay']
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001) # weight_decay=args['weight_decay']
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min',factor=0.5, patience=1, verbose=True)
     criterion = torch.nn.BCELoss()
 
@@ -218,19 +187,20 @@ def main():
     # predict
 
     y_pred, y_score, y_test = gnn_trainer_gat.predict(data_train)
+
+    # Testing statistics
+    print("Testing Statistics: ")
     print(y_pred.count(1))
     print(np.sum(y_test == 1))
     # Count occurrences of unique elements
     unique_elements, counts = np.unique(y_score, return_counts=True)
-
     # Create a dictionary mapping each unique element to its count
     element_counts = dict(zip(unique_elements, counts))
-
     print("Element Counts:", element_counts)
     print(len(y_pred))
     print(len(y_test))
 
-    # # Calculate metrics
+    # Calculate metrics
     accuracy = accuracy_score(y_test, y_pred)
     print(accuracy)
     precision = precision_score(y_test, y_pred)
