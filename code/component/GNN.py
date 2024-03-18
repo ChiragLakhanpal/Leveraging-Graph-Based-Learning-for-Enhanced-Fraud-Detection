@@ -2,12 +2,14 @@ import numpy as np
 import pandas as pd
 import polars as pl
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_curve, confusion_matrix, roc_auc_score, auc, precision_recall_curve
 import uuid
+import prettytable
 
 import torch
 from torch_geometric.data import Data, HeteroData
 import torch_geometric.transforms as T
-from torch_geometric.loader import NeighborSampler,DataLoader
+from torch_geometric.loader import NeighborSampler,DataLoader, NeighborLoader
 from class_GNN import GCN,GAT,GnnTrainer,MetricManager
 from preprocess import preprocess_data
 
@@ -16,17 +18,20 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def main():
-    data = pl.read_csv('/home/ec2-user/Capstone/card_transaction.v1.csv')
+    data = pl.read_csv('/home/ec2-user/Capstone/Data/Sampled Dataset.csv')
 
     data_processed = preprocess_data(data)
+    print(data_processed.shape)
 
     data_processed = data_processed.to_pandas()
 
-    data_processed = data_processed.sample(n=50000).reset_index(drop=True)
+    #data_processed = data_processed.sample(n=500000, random_state=42).reset_index(drop=True)
+    print(data_processed['is_fraud'].value_counts())
+    # print(data_processed.isnull().sum())
 
     # %%
     # Assign a unique id to each row
-    data_processed['id'] = [uuid.uuid4() for _ in range(len(data_processed))]
+    data_processed['id'] = [hash(uuid.uuid4()) for _ in range(len(data_processed))]
 
     # To make 'id' the first column, you can use DataFrame reindex with columns sorted to your preference
     cols = ['id'] + [col for col in data_processed.columns if col != 'id']
@@ -41,20 +46,31 @@ def main():
 
     df_features = data_processed.drop(columns=['is_fraud', 'merchant_id', 'card_id'])
 
-    # %%
-    # Create edges dataset for GNN model with source and target columns
+    import itertools
+
+    # Group transactions by card_id
     user_to_transactions = data_processed.groupby('card_id')['id'].apply(list).to_dict()
 
-    # %%
+    # Initialize edges list
     edges_list = []
 
+    # Iterate over transactions for each user
     for transactions in user_to_transactions.values():
         if len(transactions) > 1:
-            for i in range(len(transactions)):
-                for j in range(i + 1, len(transactions)):
-                    # Append both directions of the edge to the list
-                    edges_list.append({'source': transactions[i], 'target': transactions[j]})
-                    edges_list.append({'source': transactions[j], 'target': transactions[i]})
+            # Generate pairs of transactions using itertools.combinations
+            pairs = itertools.combinations(transactions, 2)
+            # Append both directions of the edge to the list
+            for pair in pairs:
+                edges_list.append({'source': pair[0], 'target': pair[1]})
+                #edges_list.append({'source': pair[1], 'target': pair[0]})
+
+    # for transactions in user_to_transactions.values():
+    #     if len(transactions) > 1:
+    #         for i in range(len(transactions)):
+    #             for j in range(i + 1, len(transactions)):
+    #                 # Append both directions of the edge to the list
+    #                 edges_list.append({'source': transactions[i], 'target': transactions[j]})
+    #                 edges_list.append({'source': transactions[j], 'target': transactions[i]})
 
     # Create the DataFrame from the list of edge dictionaries
     df_edges = pd.DataFrame(edges_list)
@@ -102,8 +118,8 @@ def main():
     # Retain known vs unknown IDs
     classified_idx = node_features.index
 
-    #classified_illicit_idx = node_features['is_fraud'].loc[node_features['is_fraud'] == 1].index  # filter on illicit labels
-    #classified_licit_idx = node_features['is_fraud'].loc[node_features['is_fraud'] == 0].index  # filter on licit labels
+    # classified_illicit_idx = node_features['is_fraud'].loc[node_features['is_fraud'] == 1].index  # filter on illicit labels
+    # classified_licit_idx = node_features['is_fraud'].loc[node_features['is_fraud'] == 0].index  # filter on licit labels
 
     # Drop unwanted columns, 0 = transID, 1=time period, class = labels
     node_features = node_features.drop(columns=['is_fraud'])
@@ -117,7 +133,11 @@ def main():
     from preprocess import split_data
 
     # Create a known vs unknown mask
-    train_idx, valid_idx = train_test_split(classified_idx.values, test_size=0.15)
+    train_idx, test_idx = train_test_split(classified_idx.values,
+                                           test_size=0.2, stratify=data_processed['is_fraud'])
+    train_idx, valid_idx = train_test_split(train_idx, test_size=0.2,
+                                            stratify=data_processed.iloc[train_idx]['is_fraud'])
+    # train_idx, valid_idx = train_test_split(classified_idx.values, test_size=0.15)
     print("train_idx size {}".format(len(train_idx)))
     print("test_idx size {}".format(len(valid_idx)))
 
@@ -137,6 +157,29 @@ def main():
     # Add in the train and valid idx
     data_train.train_idx = train_idx
     data_train.valid_idx = valid_idx
+    data_train.test_idx = test_idx
+
+    print("Node features shape: ", data_train.x.shape)
+    print("Edge index shape: ", data_train.edge_index.shape)
+    print("Labels shape: ", data_train.y.shape)
+    print("Number of nodes: ", data_train.num_nodes)
+    print("Number of edges: ", data_train.num_edges)
+    print("Number of features: ", data_train.num_features)
+    print("Dataset Shape: ", data_train.x.shape)
+    print("df_merge shape: ", df_merge.shape)
+    print("df_features shape: ", df_features.shape)
+    print("df_classes shape: ", df_classes.shape)
+    print("df_edges shape: ", df_edges.shape)
+    print("df_merge columns: ", df_merge.columns)
+    print("df_features columns: ", df_features.columns)
+    print("df_classes columns: ", df_classes.columns)
+    print("df_edges columns: ", df_edges.columns)
+
+    # train_loader = NeighborLoader(data_train,num_neighbors=[15,10], batch_size=128,directed=False, shuffle=True)
+    #
+    # val_loader = NeighborLoader(data_train,num_neighbors=[15,10], batch_size=128,directed=False, shuffle=True)
+    #
+    # test_loader = NeighborLoader(data_train,num_neighbors=[15,10], batch_size=128,directed=False, shuffle=True)
 
     # %%
     from class_GNN import GCN, GAT, GnnTrainer, MetricManager
@@ -160,15 +203,56 @@ def main():
     # elif arg.net == "GAT":
     #     model = GAT(data_train.num_node_features, args['hidden_dim'], 1, args).to(device)
 
+    #model = GAT(data_train.num_node_features, args['hidden_dim'], 1, args).to(device)
+
     model = GCN(num_nodes=num_nodes).to(device)
     # Setup training settings
-    optimizer = torch.optim.Adam(model.parameters(), lr=args['lr'], weight_decay=args['weight_decay'])
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
+    optimizer = torch.optim.Adam(model.parameters(), lr=2e-3) # weight_decay=args['weight_decay']
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min',factor=0.5, patience=1, verbose=True)
     criterion = torch.nn.BCELoss()
 
     # Train
     gnn_trainer_gat = GnnTrainer(model)
-    gnn_trainer_gat.train(data_train, optimizer, criterion, scheduler, args)
+    gnn_trainer_gat.train(data_train,optimizer, criterion, scheduler,args)
+
+    # predict
+
+    y_pred, y_score, y_test = gnn_trainer_gat.predict(data_train)
+    print(y_pred.count(1))
+    print(np.sum(y_test == 1))
+    # Count occurrences of unique elements
+    unique_elements, counts = np.unique(y_score, return_counts=True)
+
+    # Create a dictionary mapping each unique element to its count
+    element_counts = dict(zip(unique_elements, counts))
+
+    print("Element Counts:", element_counts)
+    print(len(y_pred))
+    print(len(y_test))
+
+    # # Calculate metrics
+    accuracy = accuracy_score(y_test, y_pred)
+    print(accuracy)
+    precision = precision_score(y_test, y_pred)
+    print(precision)
+    recall = recall_score(y_test, y_pred)
+    print(recall)
+    f1 = f1_score(y_test, y_pred)
+    cm = confusion_matrix(y_test, y_pred)
+    roc_auc = roc_auc_score(y_test, y_score)
+    precision_curve, recall_curve, _ = precision_recall_curve(y_test, y_score)
+    aucpr = auc(recall_curve, precision_curve)
+    fpr, tpr, roc_thresholds = roc_curve(y_test, y_score)
+
+    results = prettytable.PrettyTable(title="Metric Table")
+    results.field_names = ["Metric", "Value"]
+    results.add_row(["Accuracy", accuracy])
+    results.add_row(["Precision", precision])
+    results.add_row(["Recall", recall])
+    results.add_row(["F1 Score", f1])
+    results.add_row(["ROC AUC", roc_auc])
+    results.add_row(["AUCPR", aucpr])
+    print(results)
 
 if __name__ == '__main__':
     main()
