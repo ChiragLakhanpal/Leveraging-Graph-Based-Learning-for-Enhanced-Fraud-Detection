@@ -7,7 +7,6 @@
     <list default="true" id="776180ab-e0b5-4551-ba9f-58c060a6d7e8" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/component/GNN.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/GNN.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/component/Xgboost.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/Xgboost.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/component/class_GNN.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/class_GNN.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -83,7 +82,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="GNN_2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="GNN_Combined" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Capstone" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -96,7 +95,29 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code/component/GNN_2.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code/component/GNN_Combined.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="GNN_Loader" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Capstone" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/code/component" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code/component/GNN_Loader.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -149,35 +170,13 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="preprocess_standardized (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Capstone" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/code/component" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code/component/preprocess_standardized.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Python.GNN" />
+        <item itemvalue="Python.GNN_Combined" />
+        <item itemvalue="Python.GNN_Loader" />
         <item itemvalue="Python.GNN_Trial" />
         <item itemvalue="Python.Xgboost" />
-        <item itemvalue="Python.GNN_2" />
-        <item itemvalue="Python.preprocess_standardized (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -195,7 +194,7 @@
       <workItem from="1708991680261" duration="16899000" />
       <workItem from="1709489833507" duration="53782000" />
       <workItem from="1710690478112" duration="33727000" />
-      <workItem from="1710775326474" duration="21797000" />
+      <workItem from="1710775326474" duration="31696000" />
     </task>
     <servers />
   </component>
@@ -214,7 +213,9 @@
     <SUITE FILE_PATH="coverage/Capstone$preprocess_standardized__1_.coverage" NAME="preprocess_standardized (1) Coverage Results" MODIFIED="1709604087158" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
     <SUITE FILE_PATH="coverage/Capstone$test.coverage" NAME="test Coverage Results" MODIFIED="1709602220955" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
     <SUITE FILE_PATH="coverage/Capstone$GNN_2.coverage" NAME="GNN_2 Coverage Results" MODIFIED="1710733342761" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
+    <SUITE FILE_PATH="coverage/Capstone$GNN_Loader.coverage" NAME="GNN_Loader Coverage Results" MODIFIED="1710810280970" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
+    <SUITE FILE_PATH="coverage/Capstone$GNN_Combined.coverage" NAME="GNN_Combined Coverage Results" MODIFIED="1710810763946" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
     <SUITE FILE_PATH="coverage/Capstone$Xgboost.coverage" NAME="Xgboost Coverage Results" MODIFIED="1710794294511" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
-    <SUITE FILE_PATH="coverage/Capstone$GNN.coverage" NAME="GNN Coverage Results" MODIFIED="1710807504696" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
+    <SUITE FILE_PATH="coverage/Capstone$GNN.coverage" NAME="GNN Coverage Results" MODIFIED="1710871525197" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
   </component>
 </project>
