@@ -11,6 +11,10 @@ import pandas as pd
 import polars as pl
 from preprocess import read_data, preprocess_data, split_data
 import seaborn as sns
+import prettytable
+
+seed = 42
+np.random.seed(seed)
 
 data = pl.read_csv('Sampled Dataset.csv')
 
@@ -18,59 +22,83 @@ data = preprocess_data(data)
 
 data = data.to_pandas()
 
-# Set the device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# Separate the features (X) and target variable (y)
 X = data.drop('is_fraud', axis=1)
 y = data['is_fraud']
 
-# Split the data into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = split_data(X, y, test_size=0.2)
 
-# Standardize the features
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-# Convert data to PyTorch tensors
+print(f"X_train shape: {X_train.shape}, y_train shape: {y_train.shape}")
+print(f"X_test shape: {X_test.shape}, y_test shape: {y_test.shape}")
+print(f"Fraudulent transactions in test set: {y_test.sum()}")
+print(f"Non-fraudulent transactions in test set: {y_test.shape[0] - y_test.sum()}")
+print(f"Fraudulent transactions percentage in test set: {y_test.mean() * 100:.2f}%")
+print(f"Fraudulent transactions in train set: {y_train.sum()}")
+print(f"Non-fraudulent transactions in train set: {y_train.shape[0] - y_train.sum()}")
+print(f"Fraudulent transactions percentage in train set: {y_train.mean() * 100:.2f}%")
+
 X_train = torch.tensor(X_train, dtype=torch.float32, device=device)
 X_test = torch.tensor(X_test, dtype=torch.float32, device=device)
 y_train = torch.tensor(y_train.values, dtype=torch.float32, device=device)
 y_test = torch.tensor(y_test.values, dtype=torch.float32, device=device)
 
-# Modify the model with additional layers or regularization as needed
+import torch.nn as nn
+import torch.nn.functional as F
+
 class FraudDetectionModel(nn.Module):
     def __init__(self, input_dim):
         super(FraudDetectionModel, self).__init__()
-        self.layers = nn.Sequential(
-            nn.Linear(input_dim, 64),
-            nn.ReLU(),
-            nn.BatchNorm1d(64), 
-            nn.Dropout(0.2),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.BatchNorm1d(32), 
-            nn.Dropout(0.2),
-            nn.Linear(32, 1),
-            nn.Sigmoid()
-        )
-
+        
+        self.fc1 = nn.Linear(input_dim, 128)
+        self.bn1 = nn.BatchNorm1d(128)
+        self.dropout1 = nn.Dropout(0.3)  
+        
+        self.fc2 = nn.Linear(128, 64)
+        self.bn2 = nn.BatchNorm1d(64)
+        self.dropout2 = nn.Dropout(0.2)  
+        
+        self.fc3 = nn.Linear(64, 32)
+        self.bn3 = nn.BatchNorm1d(32)
+        self.dropout3 = nn.Dropout(0.2)  
+        
+        # Final layer before output
+        self.fc4 = nn.Linear(32, 16)
+        self.bn4 = nn.BatchNorm1d(16)
+        self.dropout4 = nn.Dropout(0.1)  
+        
+        self.fc5 = nn.Linear(16, 1)
+        
     def forward(self, x):
-        return self.layers(x)
+        x = F.relu(self.bn1(self.fc1(x)))
+        x = self.dropout1(x)
+        
+        x = F.relu(self.bn2(self.fc2(x)))
+        x = self.dropout2(x)
+        
+        x = F.relu(self.bn3(self.fc3(x)))
+        x = self.dropout3(x)
+        
+        x = F.relu(self.bn4(self.fc4(x)))
+        x = self.dropout4(x)
+        
+        x = torch.sigmoid(self.fc5(x))
+        return x
+
 
 model = FraudDetectionModel(X_train.shape[1]).to(device)
 
 criterion = nn.BCELoss()
 
-optimizer = optim.Adam(model.parameters(), lr=0.0001)
-scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)  
+optimizer = optim.Adam(model.parameters(), lr=0.00001)
 
 
-# Train the model
-epochs = 1
-batch_size = 32
-early_stopping_patience = 5
+epochs = 50
+batch_size = 128
 best_val_loss = np.inf
 best_val_f1 = 0.0
 best_model = None
@@ -79,7 +107,7 @@ train_losses = []
 val_losses = []
 f1_scores = []
 
-# Training loop
+# Training 
 for epoch in range(epochs):
     model.train()
     total_loss = 0
@@ -92,7 +120,7 @@ for epoch in range(epochs):
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
-    scheduler.step()
+    scheduler.step(f1)
 
     # Validation
     model.eval()
@@ -102,12 +130,10 @@ for epoch in range(epochs):
         y_pred = (val_outputs > 0.5).float()
         y_true = y_test.unsqueeze(1)
 
-        # Metrics
         precision = precision_score(y_true.cpu(), y_pred.cpu())
         recall = recall_score(y_true.cpu(), y_pred.cpu())
         f1 = f1_score(y_true.cpu(), y_pred.cpu())
 
-        # Log trial
         trial_log.append({
             'epoch': epoch + 1,
             'train_loss': total_loss / (X_train.shape[0] // batch_size),
@@ -121,17 +147,16 @@ for epoch in range(epochs):
         val_losses.append(val_loss)
         f1_scores.append(f1)
 
-        # Check for the best model
         if f1 > best_val_f1:
             best_val_f1 = f1
-            best_model = model.state_dict()  # Save the best model
+            best_model = model.state_dict()  
+            print('Model updated!')
 
         print(f"Epoch {epoch + 1}/{epochs}, Train Loss: {total_loss:.4f}, Val Loss: {val_loss:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}")
 
-# To ensure the best model is used for evaluation
 model.load_state_dict(best_model)
 
-# Evaluation on test set
+# Evaluation 
 model.eval()
 with torch.no_grad():
     test_outputs = model(X_test)
@@ -147,19 +172,20 @@ f1 = f1_score(y_true, y_pred)
 roc_auc = roc_auc_score(y_true, y_pred)
 aucpr = average_precision_score(y_true, y_pred)
 
-# Results
-print("Confusion Matrix:\n", conf_matrix)
-print(f"\nAccuracy: {accuracy:.4f}")
-print(f"Precision: {precision:.4f}")
-print(f"Recall: {recall:.4f}")
-print(f"F1-Score: {f1:.4f}")
-print(f"ROC AUC: {roc_auc:.4f}")
-print(f"AUCPR: {aucpr:.4f}")
-
-# After the end of the training loop
+# Print metrics
+results = prettytable.PrettyTable(title='MLP Results')
+results.field_names = ["Metric", "Value"]
+results.add_row(["Accuracy", accuracy])
+results.add_row(["Precision", precision])
+results.add_row(["Recall", recall])
+results.add_row(["F1 Score", f1])
+results.add_row(["ROC AUC", roc_auc])
+results.add_row(["AUCPR", aucpr])
+print(results)
+    
 plt.figure(figsize=(12, 5))
 
-# Plot Training and Validation Losses
+# Plot Losses
 plt.subplot(1, 2, 1)
 plt.plot(range(1, epochs+1), train_losses, 'b-', label='Training Loss')
 plt.plot(range(1, epochs+1), val_losses, 'r-', label='Validation Loss')
