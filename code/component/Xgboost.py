@@ -263,7 +263,7 @@ def main():
 
     data_processed = data_processed.to_pandas()
     
-    data_processed = data_processed.sample(frac=0.70).reset_index(drop=True)
+    #data_processed = data_processed.sample(frac=0.70).reset_index(drop=True)
             
     X = data_processed.drop(columns=['is_fraud'])
     y = data_processed['is_fraud']

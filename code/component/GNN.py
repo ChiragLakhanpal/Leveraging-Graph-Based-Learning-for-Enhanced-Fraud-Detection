@@ -13,12 +13,20 @@ from torch_geometric.data import Data, HeteroData
 import torch_geometric.transforms as T
 from torch_geometric.loader import NeighborSampler,DataLoader, NeighborLoader
 
-from class_GNN import GCN,GAT,GnnTrainer,MetricManager
-from preprocess import preprocess_data
+from class_GNN import GCN,GAT,GATv2,GnnTrainer,MetricManager#,print_metrics
+from preprocess import preprocess_data,split_data
 
 import argparse
 import warnings
 warnings.filterwarnings("ignore")
+
+# Set random seed
+seed = 42
+np.random.seed(seed)
+
+torch.manual_seed(42)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed(42)
 
 def main():
 
@@ -28,10 +36,10 @@ def main():
     # Applying the preprocess function
     data_processed = preprocess_data(data)
     print("Shape of data: ", data_processed.shape)
-
+    print(data_processed['merchant_city'].n_unique())
     data_processed = data_processed.to_pandas()
 
-    #data_processed = data_processed.sample(n=500000, random_state=42).reset_index(drop=True)
+    data_processed = data_processed.sample(n=50000, random_state=42).reset_index(drop=True)
     print("Is Fraud Value Counts", data_processed['is_fraud'].value_counts())
 
     # Assigning a unique id to each row
@@ -49,7 +57,7 @@ def main():
     df_features = data_processed.drop(columns=['is_fraud', 'merchant_id', 'card_id'])
 
     # Group transactions by card_id
-    user_to_transactions = data_processed.groupby('card_id')['id'].apply(list).to_dict()
+    user_to_transactions = data_processed.groupby('merchant_id')['id'].apply(list).to_dict()
 
     # Initialize edges list
     edges_list = []
@@ -108,9 +116,9 @@ def main():
     print(node_features_t)
 
     # Creating a train test split
-    train_idx, test_idx = train_test_split(classified_idx.values,
+    train_idx, test_idx = train_test_split(classified_idx.values, random_state=42,
                                            test_size=0.2, stratify=data_processed['is_fraud'])
-    train_idx, valid_idx = train_test_split(train_idx, test_size=0.2,
+    train_idx, valid_idx = train_test_split(train_idx, test_size=0.2,random_state=42,
                                             stratify=data_processed.iloc[train_idx]['is_fraud'])
     print("train_idx size {}".format(len(train_idx)))
     print("valid_idx size {}".format(len(valid_idx)))
@@ -171,26 +179,25 @@ def main():
     # elif arg.net == "GAT":
     #     model = GAT(data_train.num_node_features, args['hidden_dim'], 1, args).to(device)
 
-    #model = GAT(data_train.num_node_features, args['hidden_dim'], 1, args).to(device)
+    model = GATv2(data_train.num_node_features, args['hidden_dim'], 1, args).to(device)
 
-    model = GCN(num_nodes=num_nodes).to(device)
+    #model = GCN(num_nodes=num_nodes).to(device)
 
     # Setup training settings
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001) # weight_decay=args['weight_decay']
+    optimizer = torch.optim.AdamW(model.parameters(), lr=0.001) # weight_decay=args['weight_decay']
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min',factor=0.5, patience=1, verbose=True)
     criterion = torch.nn.BCELoss()
 
-    # Train
+    # Training the data
     gnn_trainer_gat = GnnTrainer(model)
     gnn_trainer_gat.train(data_train,optimizer, criterion, scheduler,args)
 
-    # predict
-
+    # Evaluation on test set
     y_pred, y_score, y_test = gnn_trainer_gat.predict(data_train)
 
     # Testing statistics
     print("Testing Statistics: ")
-    print(y_pred.count(1))
+    print(np.sum(y_pred == 1))
     print(np.sum(y_test == 1))
     # Count occurrences of unique elements
     unique_elements, counts = np.unique(y_score, return_counts=True)
@@ -199,6 +206,8 @@ def main():
     print("Element Counts:", element_counts)
     print(len(y_pred))
     print(len(y_test))
+
+    #print_metrics(y_test,y_pred,y_score)
 
     # Calculate metrics
     accuracy = accuracy_score(y_test, y_pred)
