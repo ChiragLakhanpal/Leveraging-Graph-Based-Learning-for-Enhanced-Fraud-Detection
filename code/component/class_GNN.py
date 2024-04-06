@@ -24,6 +24,8 @@ import argparse
 import warnings
 warnings.filterwarnings("ignore")
 
+from torch.nn import Linear, BatchNorm1d
+
 def CustomDataLoader(data):
 
     train_loader = DataLoader(data,batch_size=128,shuffle=False)
@@ -52,42 +54,63 @@ class GCN(torch.nn.Module):
         return F.sigmoid(out)
 
 # GATConv Class
+class GAT(torch.nn.Module):
+    def __init__(self,input_dim, hidden_dim, output_dim,args):
+        super(GAT, self).__init__()
+        #use our gat message passing
+        self.conv1 = GATConv(input_dim, hidden_dim, heads=args['heads'])
+        self.conv2 = GATConv(args['heads'] * hidden_dim, hidden_dim, heads=args['heads'])
+        self.post_mp = nn.Sequential(
+            nn.Linear(args['heads'] * hidden_dim, hidden_dim), nn.Dropout(args['dropout'] ),
+            nn.Linear(hidden_dim, output_dim))
+
+    def forward(self, data, adj=None):
+        x, edge_index = data.x, data.edge_index
+        x = self.conv1(x, edge_index)
+        x = F.dropout(F.relu(x), p=args['dropout'], training=self.training)
+        x = self.conv2(x, edge_index)
+        x = F.dropout(F.relu(x), p=args['dropout'], training=self.training)
+        x = self.post_mp(x)
+        return F.sigmoid(x)
+
 # class GAT(torch.nn.Module):
-#     def __init__(self,input_dim, hidden_dim, output_dim,args):
-#         super(GAT, self).__init__()
-#         #use our gat message passing
-#         self.conv1 = GATConv(input_dim, hidden_dim, heads=args['heads'])
-#         self.conv2 = GATConv(args['heads'] * hidden_dim, hidden_dim, heads=args['heads'])
-#         self.post_mp = nn.Sequential(
-#             nn.Linear(args['heads'] * hidden_dim, hidden_dim), nn.Dropout(args['dropout'] ),
-#             nn.Linear(hidden_dim, output_dim))
-#
-#     def forward(self, data, adj=None):
+#     def __init__(self,hidden_dim,output_dim,args):
+#         super().__init__()
+#         self.conv1 = GATConv(26, 4, heads=4,dropout=0.5)
+#         self.conv2 = GATConv(16, 1, heads=1, concat=True, dropout=0.5)
+#         # self.post_mp = nn.Sequential(
+#         #             nn.Linear(args['heads'] * hidden_dim, hidden_dim), nn.Dropout(args['dropout'] ),
+#         #             nn.Linear(hidden_dim, output_dim))
+# 
+#     def forward(self, data):
 #         x, edge_index = data.x, data.edge_index
-#         x = self.conv1(x, edge_index)
-#         x = F.dropout(F.relu(x), p=args['dropout'], training=self.training)
-#         x = self.conv2(x, edge_index)
-#         x = F.dropout(F.relu(x), p=args['dropout'], training=self.training)
-#         x = self.post_mp(x)
+#         x = F.dropout(x, p=0.5, training=self.training)
+#         x = F.relu(self.conv1(x, edge_index))
+#         x = F.dropout(x, p=0.5, training=self.training)
+#         x = F.relu(self.conv2(x, edge_index))
+#         #x = self.post_mp(x)
 #         return F.sigmoid(x)
 
-class GAT(torch.nn.Module):
-    def __init__(self,hidden_dim,output_dim,args):
-        super().__init__()
-        self.conv1 = GATConv(26, 4, heads=4,dropout=0.5)
-        self.conv2 = GATConv(16, 1, heads=1, concat=True, dropout=0.5)
-        # self.post_mp = nn.Sequential(
-        #             nn.Linear(args['heads'] * hidden_dim, hidden_dim), nn.Dropout(args['dropout'] ),
-        #             nn.Linear(hidden_dim, output_dim))
-
-    def forward(self, data):
-        x, edge_index = data.x, data.edge_index
-        x = F.dropout(x, p=0.5, training=self.training)
-        x = F.relu(self.conv1(x, edge_index))
-        x = F.dropout(x, p=0.5, training=self.training)
-        x = F.relu(self.conv2(x, edge_index))
-        #x = self.post_mp(x)
-        return F.sigmoid(x)
+#%%
+# class GAT(torch.nn.Module):
+#     """Graph Attention Network"""
+#     def __init__(self, dim_in, dim_h, dim_out, heads=8):
+#         super(GAT, self).__init__()
+#         self.norm1 = BatchNorm1d(dim_in)
+#         self.gat1 = GATv2Conv(dim_in, dim_h, heads=heads,
+#                               dropout=0.3)
+#         self.norm2 = BatchNorm1d(dim_h*heads)
+#         self.gat2 = GATv2Conv(dim_h*heads, dim_out, heads=heads,
+#                               concat=False, dropout=0.6)
+# 
+#     def forward(self, data):
+#         x, edge_index = data.x, data.edge_index
+#         h = self.norm1(x)
+#         h = self.gat1(h, edge_index)
+#         h = self.norm2(h)
+#         h = F.leaky_relu(h)
+#         out = self.gat2(h, edge_index)
+#         return out
 
     
 class GATv2(torch.nn.Module):

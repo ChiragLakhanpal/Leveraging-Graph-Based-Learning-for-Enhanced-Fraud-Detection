@@ -48,15 +48,20 @@ def main():
     cols = ['id'] + [col for col in data_processed.columns if col != 'id']
     data_processed = data_processed[cols]
 
+    data_processed['edge'] = data_processed['card_id'].astype(str)+data_processed['merchant_id'].astype(str)+data_processed['hour'].astype(str)
+    print(data_processed['edge'].nunique())
     # Create label dataset for GNN model
     df_classes = data_processed[['id', 'is_fraud']]
 
     # Create features dataset for GNN model with id and features columns
 
-    df_features = data_processed.drop(columns=['is_fraud', 'merchant_id', 'card_id'])
+    df_features = data_processed.drop(columns=['is_fraud', 'card_id','edge','zip'])
+
+
+
 
     # Group transactions by card_id
-    user_to_transactions = data_processed.groupby('card_id')['id'].apply(list).to_dict()
+    user_to_transactions = data_processed.groupby('edge')['id'].apply(list).to_dict()
 
     # Initialize edges list
     edges_list = []
@@ -180,13 +185,13 @@ def main():
     # elif arg.net == "GAT":
     #     model = GAT(data_train.num_node_features, args['hidden_dim'], 1, args).to(device)
 
-    #model = GAT(data_train.num_node_features, args['hidden_dim'], 1, args).to(device)
-    model = GAT(args['hidden_dim'],1,args).to(device)
+    model = GAT(data_train.num_node_features, args['hidden_dim'], 1,args).to(device)
+    #model = GAT(args['hidden_dim'],1,args).to(device)
     #model = GCN(num_nodes=num_nodes).to(device)
 
     # Setup training settings
-    optimizer = torch.optim.AdamW(model.parameters(), lr=0.0001,weight_decay=args['weight_decay'])
-    #scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min',factor=0.5, patience=1, verbose=True)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.1,weight_decay=args['weight_decay'])
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min',factor=0.5, patience=1, verbose=True)
     criterion = torch.nn.BCELoss()
 
     # Training the data
