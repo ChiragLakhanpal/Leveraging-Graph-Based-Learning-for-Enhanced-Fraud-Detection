@@ -171,7 +171,7 @@ roc_auc = roc_auc_score(y_true, y_pred)
 aucpr = average_precision_score(y_true, y_pred)
 
 # Print metrics
-results = prettytable.PrettyTable(title='MLP Results')
+results = prettytable.PrettyTable(title='CNN Results')
 results.field_names = ["Metric", "Value"]
 results.add_row(["Accuracy", accuracy])
 results.add_row(["Precision", precision])
