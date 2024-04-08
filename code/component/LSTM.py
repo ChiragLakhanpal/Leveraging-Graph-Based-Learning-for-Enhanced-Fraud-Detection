@@ -73,9 +73,9 @@ print("Training and testing data shape after adding time dimension for LSTM: ")
 print("Training Shape: ", X_train_tensors.shape, y_train.shape)
 print("Testing Shape: ", X_test_tensors.shape, y_test.shape)
 
-class LSTM1(nn.Module):
+class LSTM(nn.Module):
     def __init__(self, num_classes, input_size, hidden_size, num_layers, seq_length):
-        super(LSTM1, self).__init__()
+        super(LSTM, self).__init__()
         self.num_classes = num_classes
         self.num_layers = num_layers
         self.input_size = input_size
@@ -99,7 +99,7 @@ hidden_size = 128
 num_layers = 1
 num_classes = 1
 
-model = LSTM1(num_classes, input_size, hidden_size,num_layers, X_train_tensors.shape[1]).to(device)
+model = LSTM(num_classes, input_size, hidden_size,num_layers, X_train_tensors.shape[1]).to(device)
 
 criterion = nn.BCELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
