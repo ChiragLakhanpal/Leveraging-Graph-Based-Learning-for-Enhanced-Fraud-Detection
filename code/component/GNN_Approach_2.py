@@ -15,7 +15,7 @@ from torch import nn
 from torch_geometric.data import Data, HeteroData
 import torch_geometric.transforms as T
 from torch_geometric.loader import NeighborSampler
-from torch_geometric.nn import GATConv, to_hetero
+from torch_geometric.nn import GATConv, to_hetero, SAGEConv
 
 #from torch_sparse import SparseTensor
 from class_GNN import GCN,GAT,GnnTrainer,MetricManager
@@ -36,7 +36,8 @@ if torch.cuda.is_available():
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-data = pd.read_csv("Sampled Dataset.csv")
+data = pd.read_csv('/home/ec2-user/DS_Capstone/Data/card_transaction.v1.csv')
+data = data.sample(n=2000000, random_state=42).reset_index(drop=True)
 print(data.head())
 
 data.rename(columns={'User':'user',
@@ -187,20 +188,6 @@ data.test_idx = test_idx
 args = {"epochs": 100, 'lr': 0.0001, 'weight_decay': 5e-4, 'heads': 2, 'hidden_dim': 128, 'dropout': 0.3}
 from torch_geometric.nn import GATConv, Linear, to_hetero
 
-# class GAT(torch.nn.Module):
-#     def __init__(self, hidden_channels, out_channels):
-#         super().__init__()
-#         self.conv1 = GATConv((-1, -1), hidden_channels, add_self_loops=False)
-#         self.lin1 = Linear(-1, hidden_channels)
-#         self.conv2 = GATConv((-1, -1), out_channels, add_self_loops=False)
-#         self.lin2 = Linear(-1, out_channels)
-#
-#     def forward(self, x, edge_index):
-#         x = self.conv1(x, edge_index) + self.lin1(x)
-#         x = x.relu()
-#         x = self.conv2(x, edge_index) + self.lin2(x)
-#         return F.sigmoid(x)
-
 class GAT(torch.nn.Module):
     def __init__(self, hidden_dim, output_dim):
         super(GAT, self).__init__()
@@ -217,10 +204,24 @@ class GAT(torch.nn.Module):
         x = F.dropout(F.relu(x), p=args['dropout'], training=self.training)
         return F.sigmoid(x)
 
+class GNN(torch.nn.Module):
+    def __init__(self, hidden_channels, out_channels):
+        super().__init__()
+        self.conv1 = SAGEConv((-1, -1), hidden_channels)
+        self.conv2 = SAGEConv((-1, -1), out_channels)
 
-model = GAT(args['hidden_dim'], 1).to(device)
+    def forward(self, x, edge_index):
+        x = self.conv1(x, edge_index).relu()
+        x = self.conv2(x, edge_index)
+        return x
+
+
+model = GNN(hidden_channels=64, out_channels=1).to(device)
+model = to_hetero(model, data.metadata(), aggr='sum')
+
+#model = GAT(args['hidden_dim'], 1).to(device)
 #model = GAT(hidden_channels=64, out_channels=1).to(device)
-model = to_hetero(model, data.metadata(), aggr='sum').to(device)
+#model = to_hetero(model, data.metadata(), aggr='sum').to(device)
 
 
 
