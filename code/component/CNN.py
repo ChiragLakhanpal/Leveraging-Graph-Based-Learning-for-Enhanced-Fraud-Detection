@@ -45,7 +45,7 @@ class CustomDataset(Dataset):
     def __len__(self):
         return self.X.size(0)
     def __getitem__(self,idx):
-        return self.X[idx], self.y[idx]
+        return self.X, self.y[idx]
 
 class CustomDataLoader:
     def __init__(self,  batch_size=128):

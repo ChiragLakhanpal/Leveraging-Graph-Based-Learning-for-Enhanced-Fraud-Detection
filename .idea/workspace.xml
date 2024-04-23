@@ -5,15 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="776180ab-e0b5-4551-ba9f-58c060a6d7e8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/code/component/GNN_DGL.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/component/GNN_Final.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/component/GNN_Final_DGL.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/component/CNN.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/CNN.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/component/Deep Learning.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/Deep Learning.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/component/GNN_Approach_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/GNN_Approach_2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/component/GNN_Approach_2_IEEE.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/GNN_Approach_2_IEEE.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/component/Xgboost.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/Xgboost.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -318,7 +311,7 @@
       <workItem from="1712694160732" duration="2031000" />
       <workItem from="1712697699354" duration="2661000" />
       <workItem from="1712707668982" duration="237000" />
-      <workItem from="1713119652849" duration="105124000" />
+      <workItem from="1713119652849" duration="105877000" />
     </task>
     <servers />
   </component>
