@@ -4,10 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
+<<<<<<< Updated upstream
     <list default="true" id="776180ab-e0b5-4551-ba9f-58c060a6d7e8" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/code/component/GNN_DGL.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/code/component/GNN_Final.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/code/component/GNN_Final_DGL.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/component/CNN.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/CNN.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/component/Deep Learning.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/Deep Learning.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/component/GNN_Approach_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/GNN_Approach_2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/component/GNN_Approach_2_IEEE.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/GNN_Approach_2_IEEE.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/component/Xgboost.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/component/Xgboost.py" afterDir="false" />
     </list>
+=======
+    <list default="true" id="776180ab-e0b5-4551-ba9f-58c060a6d7e8" name="Changes" comment="" />
+>>>>>>> Stashed changes
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -39,8 +50,13 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "true",
+<<<<<<< Updated upstream
     "git-widget-placeholder": "Sunisha",
     "last_opened_file_path": "C:/Desktop/Data_Science_Capstone/DGL_IEEE",
+=======
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Desktop/Data_Science_Capstone/DataSet/IBM TabFormer",
+>>>>>>> Stashed changes
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -170,7 +186,11 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+<<<<<<< Updated upstream
     <configuration name="GNN_Approach_2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+=======
+    <configuration name="GNN_Combined" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+>>>>>>> Stashed changes
       <module name="Capstone" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -183,7 +203,33 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+<<<<<<< Updated upstream
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code/component/GNN_Approach_2.py" />
+=======
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code/component/GNN_Combined.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="GNN_Loader" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Capstone" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/code/component" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code/component/GNN_Loader.py" />
+>>>>>>> Stashed changes
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -236,6 +282,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+<<<<<<< Updated upstream
     <configuration name="GNN_Hetero_RGCN" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Capstone" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -280,13 +327,22 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+=======
+>>>>>>> Stashed changes
     <recent_temporary>
       <list>
         <item itemvalue="Python.GNN_Hetero_RGCN" />
         <item itemvalue="Python.GNN_Final" />
         <item itemvalue="Python.GNN" />
+<<<<<<< Updated upstream
         <item itemvalue="Python.CNN" />
         <item itemvalue="Python.Deep Learning" />
+=======
+        <item itemvalue="Python.GNN_Combined" />
+        <item itemvalue="Python.GNN_Loader" />
+        <item itemvalue="Python.GNN_Trial" />
+        <item itemvalue="Python.Xgboost" />
+>>>>>>> Stashed changes
       </list>
     </recent_temporary>
   </component>
@@ -304,6 +360,7 @@
       <workItem from="1708991680261" duration="16899000" />
       <workItem from="1709489833507" duration="53782000" />
       <workItem from="1710690478112" duration="33727000" />
+<<<<<<< Updated upstream
       <workItem from="1710775326474" duration="35457000" />
       <workItem from="1710877233940" duration="5992000" />
       <workItem from="1711307989906" duration="61459000" />
@@ -311,7 +368,10 @@
       <workItem from="1712694160732" duration="2031000" />
       <workItem from="1712697699354" duration="2661000" />
       <workItem from="1712707668982" duration="237000" />
-      <workItem from="1713119652849" duration="105877000" />
+      <workItem from="1713119652849" duration="105124000" />
+=======
+      <workItem from="1710775326474" duration="32009000" />
+>>>>>>> Stashed changes
     </task>
     <servers />
   </component>
@@ -347,10 +407,18 @@
     <SUITE FILE_PATH="coverage/Capstone$GNN_Trial.coverage" NAME="GNN_Trial Coverage Results" MODIFIED="1710799278598" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
     <SUITE FILE_PATH="coverage/Capstone$preprocess_standardized__1_.coverage" NAME="preprocess_standardized (1) Coverage Results" MODIFIED="1709604087158" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
     <SUITE FILE_PATH="coverage/Capstone$test.coverage" NAME="test Coverage Results" MODIFIED="1709602220955" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
+<<<<<<< Updated upstream
     <SUITE FILE_PATH="coverage/Capstone$Deep_Learning_2__1_.coverage" NAME="Deep Learning_2 (1) Coverage Results" MODIFIED="1710877452573" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
     <SUITE FILE_PATH="coverage/Capstone$GNN_Loader.coverage" NAME="GNN_Loader Coverage Results" MODIFIED="1710810280970" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
     <SUITE FILE_PATH="coverage/Capstone$GNN_Combined.coverage" NAME="GNN_Combined Coverage Results" MODIFIED="1710810763946" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
     <SUITE FILE_PATH="coverage/Capstone$GNN_Final.coverage" NAME="GNN_Final Coverage Results" MODIFIED="1713842683953" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
     <SUITE FILE_PATH="coverage/Capstone$GNN_Approach_2.coverage" NAME="GNN_Approach_2 Coverage Results" MODIFIED="1713140674504" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
+=======
+    <SUITE FILE_PATH="coverage/Capstone$GNN_2.coverage" NAME="GNN_2 Coverage Results" MODIFIED="1710733342761" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
+    <SUITE FILE_PATH="coverage/Capstone$GNN_Loader.coverage" NAME="GNN_Loader Coverage Results" MODIFIED="1710810280970" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
+    <SUITE FILE_PATH="coverage/Capstone$GNN_Combined.coverage" NAME="GNN_Combined Coverage Results" MODIFIED="1710810763946" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
+    <SUITE FILE_PATH="coverage/Capstone$Xgboost.coverage" NAME="Xgboost Coverage Results" MODIFIED="1710794294511" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
+    <SUITE FILE_PATH="coverage/Capstone$GNN.coverage" NAME="GNN Coverage Results" MODIFIED="1710871525197" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code/component" />
+>>>>>>> Stashed changes
   </component>
 </project>
