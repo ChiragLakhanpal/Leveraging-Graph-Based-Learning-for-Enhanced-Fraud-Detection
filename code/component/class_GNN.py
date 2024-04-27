@@ -24,15 +24,17 @@ import argparse
 import warnings
 warnings.filterwarnings("ignore")
 
-# def CustomDataLoader(data):
-#
-#     train_loader = NeighborLoader(data,num_neighbors=[15,10], batch_size=128,directed=False, shuffle=True)
-#
-#     val_loader = NeighborLoader(data,num_neighbors=[15,10], batch_size=128,directed=False, shuffle=True)
-#
-#     test_loader = NeighborLoader(data,num_neighbors=[15,10], batch_size=128,directed=False, shuffle=True)
-#
-#     return train_loader, val_loader, test_loader
+from torch.nn import Linear, BatchNorm1d
+
+def CustomDataLoader(data):
+
+    train_loader = DataLoader(data,batch_size=128,shuffle=False)
+
+    val_loader = DataLoader(data,batch_size=128,shuffle=False)
+
+    test_loader = DataLoader(data,batch_size=128,shuffle=False)
+
+    return train_loader, val_loader, test_loader
 
 # GCNConv Class
 class GCN(torch.nn.Module):
@@ -70,6 +72,46 @@ class GAT(torch.nn.Module):
         x = F.dropout(F.relu(x), p=args['dropout'], training=self.training)
         x = self.post_mp(x)
         return F.sigmoid(x)
+
+# class GAT(torch.nn.Module):
+#     def __init__(self,hidden_dim,output_dim,args):
+#         super().__init__()
+#         self.conv1 = GATConv(26, 4, heads=4,dropout=0.5)
+#         self.conv2 = GATConv(16, 1, heads=1, concat=True, dropout=0.5)
+#         # self.post_mp = nn.Sequential(
+#         #             nn.Linear(args['heads'] * hidden_dim, hidden_dim), nn.Dropout(args['dropout'] ),
+#         #             nn.Linear(hidden_dim, output_dim))
+# 
+#     def forward(self, data):
+#         x, edge_index = data.x, data.edge_index
+#         x = F.dropout(x, p=0.5, training=self.training)
+#         x = F.relu(self.conv1(x, edge_index))
+#         x = F.dropout(x, p=0.5, training=self.training)
+#         x = F.relu(self.conv2(x, edge_index))
+#         #x = self.post_mp(x)
+#         return F.sigmoid(x)
+
+#%%
+# class GAT(torch.nn.Module):
+#     """Graph Attention Network"""
+#     def __init__(self, dim_in, dim_h, dim_out, heads=8):
+#         super(GAT, self).__init__()
+#         self.norm1 = BatchNorm1d(dim_in)
+#         self.gat1 = GATv2Conv(dim_in, dim_h, heads=heads,
+#                               dropout=0.3)
+#         self.norm2 = BatchNorm1d(dim_h*heads)
+#         self.gat2 = GATv2Conv(dim_h*heads, dim_out, heads=heads,
+#                               concat=False, dropout=0.6)
+# 
+#     def forward(self, data):
+#         x, edge_index = data.x, data.edge_index
+#         h = self.norm1(x)
+#         h = self.gat1(h, edge_index)
+#         h = self.norm2(h)
+#         h = F.leaky_relu(h)
+#         out = self.gat2(h, edge_index)
+#         return out
+
     
 class GATv2(torch.nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, args):
@@ -107,11 +149,8 @@ class GnnTrainer(object):
         #self.data_train = train_loader
         for epoch in range(args['epochs']):
             self.model.train()
-
-            
             optimizer.zero_grad()
             out = self.model(data_train)
-
             out = out.reshape((data_train.x.shape[0]))
             loss = criterion(out[data_train.train_idx], data_train.y[data_train.train_idx])
             ## Metric calculations
@@ -129,7 +168,8 @@ class GnnTrainer(object):
 
             # validation data
             self.model.eval()
-            
+
+
             target_labels = data_train.y.detach().cpu().numpy()[data_train.valid_idx]
             pred_scores = out.detach().cpu().numpy()[data_train.valid_idx]
             val_acc, val_f1, val_f1macro, val_aucroc, val_recall, val_precision, val_cm = self.metric_manager.store_metrics(
@@ -144,7 +184,8 @@ class GnnTrainer(object):
     def predict(self,data_train,unclassified_only = True,threshold=0.5):
         # evaluate model:
         self.model.eval()
-        
+
+
         out = self.model(data_train)
         out = out.reshape((data_train.x.shape[0]))
         target_labels = data_train.y.detach().cpu().numpy()[data_train.test_idx]

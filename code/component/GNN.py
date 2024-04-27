@@ -13,7 +13,7 @@ from torch_geometric.data import Data, HeteroData
 import torch_geometric.transforms as T
 from torch_geometric.loader import NeighborSampler,DataLoader, NeighborLoader
 
-from class_GNN import GCN,GAT,GATv2,GnnTrainer,MetricManager#,print_metrics
+from class_GNN import CustomDataLoader,GCN,GAT,GATv2,GnnTrainer,MetricManager#,print_metrics
 from preprocess import preprocess_data,split_data
 
 import argparse
@@ -36,10 +36,9 @@ def main():
     # Applying the preprocess function
     data_processed = preprocess_data(data)
     print("Shape of data: ", data_processed.shape)
-    print(data_processed['merchant_city'].n_unique())
     data_processed = data_processed.to_pandas()
 
-    data_processed = data_processed.sample(n=50000, random_state=42).reset_index(drop=True)
+    data_processed = data_processed.sample(n=200000, random_state=42).reset_index(drop=True)
     print("Is Fraud Value Counts", data_processed['is_fraud'].value_counts())
 
     # Assigning a unique id to each row
@@ -49,15 +48,20 @@ def main():
     cols = ['id'] + [col for col in data_processed.columns if col != 'id']
     data_processed = data_processed[cols]
 
+    data_processed['edge'] = data_processed['card_id'].astype(str)+data_processed['merchant_id'].astype(str)+data_processed['hour'].astype(str)
+    print(data_processed['edge'].nunique())
     # Create label dataset for GNN model
     df_classes = data_processed[['id', 'is_fraud']]
 
     # Create features dataset for GNN model with id and features columns
 
-    df_features = data_processed.drop(columns=['is_fraud', 'merchant_id', 'card_id'])
+    df_features = data_processed.drop(columns=['is_fraud', 'card_id','edge','zip'])
+
+
+
 
     # Group transactions by card_id
-    user_to_transactions = data_processed.groupby('merchant_id')['id'].apply(list).to_dict()
+    user_to_transactions = data_processed.groupby('edge')['id'].apply(list).to_dict()
 
     # Initialize edges list
     edges_list = []
@@ -128,6 +132,8 @@ def main():
                       y=torch.tensor(labels, dtype=torch.float))
     print(data_train)
 
+    #train_loader, val_loader, test_loader = CustomDataLoader(data_train)
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     data_train = T.ToUndirected()(data_train)
@@ -161,7 +167,7 @@ def main():
     # test_loader = NeighborLoader(data_train,num_neighbors=[15,10], batch_size=128,directed=False, shuffle=True)
 
     # Set training arguments
-    args = {"epochs": 50, 'lr': 0.001, 'weight_decay': 1e-5, 'heads': 2, 'hidden_dim': 128, 'dropout': 0.5}
+    args = {"epochs": 100, 'lr': 0.001, 'weight_decay': 5e-4, 'heads': 2, 'hidden_dim': 128, 'dropout': 0.5}
     num_nodes = node_features_t.shape[1]
 
     # # Initialize the argument parser
@@ -179,12 +185,12 @@ def main():
     # elif arg.net == "GAT":
     #     model = GAT(data_train.num_node_features, args['hidden_dim'], 1, args).to(device)
 
-    model = GATv2(data_train.num_node_features, args['hidden_dim'], 1, args).to(device)
-
+    model = GAT(data_train.num_node_features, args['hidden_dim'], 1,args).to(device)
+    #model = GAT(args['hidden_dim'],1,args).to(device)
     #model = GCN(num_nodes=num_nodes).to(device)
 
     # Setup training settings
-    optimizer = torch.optim.AdamW(model.parameters(), lr=0.001) # weight_decay=args['weight_decay']
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.1,weight_decay=args['weight_decay'])
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min',factor=0.5, patience=1, verbose=True)
     criterion = torch.nn.BCELoss()
 
@@ -211,13 +217,11 @@ def main():
 
     # Calculate metrics
     accuracy = accuracy_score(y_test, y_pred)
-    print(accuracy)
     precision = precision_score(y_test, y_pred)
-    print(precision)
     recall = recall_score(y_test, y_pred)
-    print(recall)
     f1 = f1_score(y_test, y_pred)
     cm = confusion_matrix(y_test, y_pred)
+    print(cm)
     roc_auc = roc_auc_score(y_test, y_score)
     precision_curve, recall_curve, _ = precision_recall_curve(y_test, y_score)
     aucpr = auc(recall_curve, precision_curve)
