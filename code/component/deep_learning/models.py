@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class CNN(nn.Module):
     """
         Convolutional Neural Network (CNN) model for tabular data classification tasks.
