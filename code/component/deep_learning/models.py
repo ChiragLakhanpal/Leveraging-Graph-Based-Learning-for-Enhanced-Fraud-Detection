@@ -2,32 +2,17 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 class CNN(nn.Module):
-    """
-        Convolutional Neural Network (CNN) model for tabular data classification tasks.
-
-        This model consists of two convolutional layers followed by max pooling operations,
-        and two fully connected layers for classification.
-
-        :param output_dim(int): Dimension of the output (number of classes).
-
-        Attributes:
-            conv1 (nn.Conv1d): First convolutional layer with 16 output channels and kernel size 3.
-            maxpool1 (nn.MaxPool1d): Max pooling layer with kernel size 2.
-            conv2 (nn.Conv1d): Second convolutional layer with 32 output channels and kernel size 3.
-            relu (nn.ReLU): ReLU activation function.
-            fc1 (nn.Linear): First fully connected layer with input size 224 and output size 128.
-            fc2 (nn.Linear): Second fully connected layer with input size 128 and output size specified by output_dim.
-
-        """
-    def __init__(self, output_dim):
+    def __init__(self, in_size,cnn_hidden_size,hidden_size,cnn_out_size,output_dim,kernel_size,kernel_size_pool):
         super(CNN, self).__init__()
-        self.conv1 = nn.Conv1d(in_channels=1, out_channels=16, kernel_size=3)
-        self.maxpool1 = nn.MaxPool1d(kernel_size=2)
-        self.conv2 = nn.Conv1d(in_channels=16, out_channels=32, kernel_size=3)
+        self.conv1 = nn.Conv1d(in_channels=in_size, out_channels=cnn_hidden_size, kernel_size=kernel_size)
+        self.maxpool1 = nn.MaxPool1d(kernel_size=kernel_size_pool)
+        self.conv2 = nn.Conv1d(in_channels=cnn_hidden_size, out_channels=cnn_out_size, kernel_size=kernel_size)
         self.relu = nn.ReLU()
-        self.fc1 = nn.Linear(64, 128)
-        self.fc2 = nn.Linear(128, output_dim)
+        self.fc1 = nn.Linear(64, hidden_size)
+        self.fc2 = nn.Linear(hidden_size, output_dim)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -53,32 +38,32 @@ class LSTM(nn.Module):
         self.seq_length = seq_length
         self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size,
                             num_layers=num_layers, batch_first=True)
-        self.fc = nn.Linear(128, num_classes)
+        self.fc = nn.Linear(hidden_size, num_classes)
     def forward(self, x):
         h_0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, device=device)
         c_0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, device=device)
-        output, (hn, cn) = self.lstm(x.unsqueeze(1), (h_0, c_0))
+        output, (hn, cn) = self.lstm(x, (h_0, c_0))
         hn = hn.view(-1, self.hidden_size)
         out = F.relu(hn)
         out = self.fc(out)
         return F.sigmoid(out)
+
 class CNN_LSTM(nn.Module):
-    def __init__(self, input_size):
+    def __init__(self, in_size,hidden_size,hidden_size_2,num_layers,cnn_out,output_size,kernel_size,kernel_size_pool,stride,padding):
         super(CNN_LSTM, self).__init__()
         self.cnn = nn.Sequential(
-            nn.Conv1d(in_channels=1, out_channels=64, kernel_size=3, stride=1, padding=1),
+            nn.Conv1d(in_channels=in_size, out_channels=cnn_out, kernel_size=kernel_size, stride=stride, padding=padding),
             nn.ReLU(),
-            nn.MaxPool1d(kernel_size=2, stride=2),
-            nn.Conv1d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1),
+            nn.MaxPool1d(kernel_size=kernel_size_pool, stride=stride),
+            nn.Conv1d(in_channels=cnn_out, out_channels=hidden_size, kernel_size=kernel_size, stride=stride, padding=padding),
             nn.ReLU(),
-            nn.MaxPool1d(kernel_size=2, stride=2)
+            nn.MaxPool1d(kernel_size=kernel_size_pool, stride=stride)
         )
-        self.lstm = nn.LSTM(input_size=128, hidden_size=256, num_layers=1, batch_first=True)
-        self.fc = nn.Linear(256, 1)
+        self.lstm = nn.LSTM(input_size=hidden_size, hidden_size=hidden_size_2, num_layers=num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size_2, output_size)
 
     def forward(self, x):
         out = self.cnn(x)
-        # lstm takes input of shape (batch_size, seq_len, input_size)
         out = out.permute(0, 2, 1)
         out, _ = self.lstm(out)
         out = self.fc(out[:, -1, :])
