@@ -77,9 +77,12 @@ def preprocess_data(dataframe,
             one_hot=True, 
             na_cleaner_mode="remove row", 
             normalize=True,
-            balance=False, 
+            balance=False,
+            sample = False,
+            sample_size = 0.2,
+            stratify_column = None, 
             datetime_columns=[],
-            clean_cols=[], 
+            clean_columns=[], 
             remove_columns=[], 
             consider_as_categorical=[],
             target='',
@@ -111,9 +114,12 @@ def preprocess_data(dataframe,
                  Default is True.
     :param balance: If True, the dataset will be balanced using SMOTE. 
                Default is False.
+    :param sample: If True, the function will sample the data. Default is False.
+    :param sample_size: Size of the sample. Default is 0.2.
+    :param stratify_column: Column to stratify the sample. Default is None.
     :param datetime_columns: List of columns containing date/time values.
                         Default is ['Time'].
-    :param clean_cols: List of columns to be cleaned (removing special characters).
+    :param clean_columns: List of columns to be cleaned (removing special characters).
                   Default is ['Amount'].
     :param remove_columns: List of columns to be removed from the DataFrame.
                       Default is [].
@@ -140,13 +146,14 @@ def preprocess_data(dataframe,
     if verbose: 
             print("=  Cleaning columns... ")
             
-    datetime_columns        = [clean_col_name(col) for col in datetime_columns]
-    clean_cols              = [clean_col_name(col) for col in clean_cols]
-    remove_columns          = [clean_col_name(col) for col in remove_columns]
-    consider_as_categorical = [clean_col_name(col) for col in consider_as_categorical]
-    target                  = clean_col_name(target)
+    if datetime_columns        : datetime_columns        = [clean_col_name(col) for col in datetime_columns]
+    if clean_columns           : clean_columns           = [clean_col_name(col) for col in clean_columns]
+    if remove_columns          : remove_columns          = [clean_col_name(col) for col in remove_columns]
+    if consider_as_categorical : consider_as_categorical = [clean_col_name(col) for col in consider_as_categorical]
+    if stratify_column         : stratify_column         = clean_col_name(stratify_column)
+    if target                  : target                  = clean_col_name(target)
     
-    df = clean_columns_df(df, clean_cols, verbose)
+    df = clean_columns_df(df, clean_columns, verbose)
  
     # casting datetime columns to datetime dtypes -----------------------------------------------------------------------
     if len(datetime_columns) > 0:
@@ -159,6 +166,12 @@ def preprocess_data(dataframe,
         if verbose: 
             print("=  Performing removal of unwanted columns... ")
         df = remove_columns_df(df, remove_columns, verbose)
+        
+    # sample data -------------------------------------------------------------------------------------------------------
+    if sample:
+        if verbose: 
+            print("=  Sampling data... ")
+        df = sample_data(df, sample_size, stratify_column, verbose)
 
     # clean None (na) values --------------------------------------------------------------------------------------------
     if na_cleaner_mode != False: 
@@ -199,6 +212,45 @@ def preprocess_data(dataframe,
 
 """ ------------------------------------------------------------------------------------------------------------------------- """
 
+
+def sample_data(df, sample_size, stratify_column=None, verbose=True):
+    """
+    sample_data function samples the data based on the specified sample size and stratify column
+    :param df: input Pandas DataFrame
+    :param sample_size: size of the sample.(default: 0.2)
+    :param stratify_column: column to stratify the sample (default: None)
+    :param verbose: print progress in terminal/cmd (default: True)
+    :returns: sampled Pandas DataFrame
+    """
+    try:
+        if isinstance(sample_size, float) and 0.0 <= sample_size <= 1.0:
+            sample_frac = sample_size
+            sample_n = None
+        elif isinstance(sample_size, int) and sample_size > 1:
+            sample_frac = None
+            sample_n = sample_size
+        else:
+            raise ValueError(" - Invalid sample_size. Provide either a percentage (0.0-1.0)")
+        
+        if stratify_column is not None and stratify_column not in df.columns:
+            raise ValueError(f"Stratify column '{stratify_column}' not found in DataFrame.")
+        
+        if stratify_column is not None:
+            if verbose:
+                print(" + sampling data with stratification")
+            df = df.groupby(stratify_column, group_keys=False).apply(lambda x: x.sample(frac=sample_frac, n=sample_n, random_state=42))
+        else:
+            if verbose:
+                print(" + sampling data")
+            df = df.sample(frac=sample_frac, n=sample_n, random_state=42)
+        
+        if verbose:
+            print(" + sampled data successfully. Number of samples: {}. Number of stratified samples: {}".format(df.shape[0], df[stratify_column].value_counts() if stratify_column else "N/A"))
+        
+        return df
+    
+    except Exception as e:
+        print(" ERROR: {}".format(e))
 
 def encode_categorical_columns(df, consider_as_categorical, target, binary_threshold=2, label_threshold=3, high_cardinality_threshold=10, one_hot=True, verbose=True):
     """
@@ -298,12 +350,12 @@ def clean_col_name(col):
     
     
 
-def clean_columns_df(df, clean_cols=None, verbose=True):
+def clean_columns_df(df, clean_columns=None, verbose=True):
     """
     clean_columns_df function cleans column names and values in the DataFrame by removing special characters and replacing spaces with underscores
     
     :param df: input Pandas DataFrame
-    :param clean_cols: list of columns to be cleaned (default: None)
+    :param clean_columns: list of columns to be cleaned (default: None)
     :param verbose: print progress in terminal/cmd
     :returns: cleaned Pandas DataFrame
     
@@ -314,8 +366,8 @@ def clean_columns_df(df, clean_cols=None, verbose=True):
         
         df = df.rename(columns={col: cleaned_col_name})
         
-        if clean_cols:
-            if col in clean_cols:
+        if clean_columns:
+            if col in clean_columns:
                 df[col] = df[col].apply(lambda x: re.sub(r'[^a-zA-Z0-9\s\.]', '', str(x)))
     
     return df
@@ -620,8 +672,11 @@ def main():
     parser.add_argument('--na_cleaner_mode', type=str, default="remove row", help='Technique for handling missing values. Options: remove row, mean, mode, *. Default: mode')
     parser.add_argument('--normalize', type=bool, action=argparse.BooleanOptionalAction, default=True, help='If True, non-binary columns will be normalized. Do not use it with numeric_dtype = True. Default: True')
     parser.add_argument('--balance', type=bool, action=argparse.BooleanOptionalAction, default=False, help='If True, the dataset will be balanced using SMOTE. Default: False')
+    parser.add_argument('--sample', type=bool, action=argparse.BooleanOptionalAction, default=False, help='If True, the function will sample the data. Default: False')
+    parser.add_argument('--sample_size', type=float, default=0.2, help='Size of the sample. Default: 0.2')
+    parser.add_argument('--stratify_column', type=str, default=None, help='Column to stratify the sample. Default: None')
     parser.add_argument('--datetime_columns', nargs='*', default=[], help='List of columns containing date/time values. Default: []')
-    parser.add_argument('--clean_cols', nargs='*', default=[], help='List of columns to be cleaned (removing special characters). Default: []')
+    parser.add_argument('--clean_columns', nargs='*', default=[], help='List of columns to be cleaned (removing special characters). Default: []')
     parser.add_argument('--remove_columns', nargs='*', default=[], help='List of columns to be removed from the DataFrame. Default: []')
     parser.add_argument('--consider_as_categorical', nargs='*', default=[], help='List of columns to be considered as categorical. Default: []')
     parser.add_argument('--target', type=str, default=None, help='Target column')
@@ -632,7 +687,7 @@ def main():
     data_path = os.path.join(parent_dir, args.data_path) if args.data_path == default_data_path else args.data_path
     output_path = os.path.join(parent_dir, args.output_path) if args.output_path == default_output_path else args.output_path
     args.datetime_columns = args.datetime_columns[0].split(',') if args.datetime_columns else []
-    args.clean_cols = args.clean_cols[0].split(',') if args.clean_cols else []
+    args.clean_columns = args.clean_columns[0].split(',') if args.clean_columns else []
     args.remove_columns = args.remove_columns[0].split(',') if args.remove_columns else []
     args.consider_as_categorical = args.consider_as_categorical[0].split(',') if args.consider_as_categorical else []
     
@@ -641,18 +696,21 @@ def main():
         print(data.head())
 
         data_processed = preprocess_data(dataframe=data, 
-                                        detect_binary=args.detect_binary,
-                                        numeric_dtype=args.numeric_dtype,
-                                        one_hot=args.one_hot,
-                                        na_cleaner_mode=args.na_cleaner_mode,
-                                        normalize=args.normalize,
-                                        balance=args.balance,
-                                        datetime_columns=args.datetime_columns,
-                                        clean_cols=args.clean_cols,
-                                        remove_columns=args.remove_columns,
-                                        consider_as_categorical=args.consider_as_categorical,
-                                        target=args.target,                                                                               
-                                        verbose=args.verbose)
+                                         detect_binary=args.detect_binary, 
+                                         numeric_dtype=args.numeric_dtype, 
+                                         one_hot=args.one_hot, 
+                                         na_cleaner_mode=args.na_cleaner_mode, 
+                                         normalize=args.normalize,
+                                         balance=args.balance,
+                                         sample=args.sample,
+                                         sample_size=args.sample_size,
+                                         stratify_column=args.stratify_column,
+                                         datetime_columns=args.datetime_columns,
+                                         clean_columns=args.clean_columns,
+                                         remove_columns=args.remove_columns,
+                                         consider_as_categorical=args.consider_as_categorical,
+                                         target=args.target,
+                                         verbose=args.verbose)
         print(data_processed.head())
         
         print(f"Data shape before processing: {data.shape}")
