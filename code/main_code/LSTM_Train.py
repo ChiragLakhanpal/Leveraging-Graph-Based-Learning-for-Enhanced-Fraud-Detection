@@ -57,7 +57,7 @@ def main():
     args = arg_parser()
 
     # Read the data and run the preprocess function
-    
+    target = clean_col_name(args.target)
     data = read_data(data_path=data_path)
 
     data = preprocess_data(dataframe=data,
@@ -72,14 +72,14 @@ def main():
                            stratify_column='Is Fraud?',
                            datetime_columns=['Time'],
                            clean_columns=['Amount'],
-                           remove_columns=[],
+                           remove_columns=["User","Merchant Name","Card"],
                            consider_as_categorical=['Use Chip', 'Merchant City', 'Merchant State', 'Zip', 'MCC',
                                                     'Errors?'],
                            target='Is Fraud?',
                            verbose=True)
 
-    X = data.drop(args.target, axis=1)
-    y = data[args.target]
+    X = data.drop(target, axis=1)
+    y = data[target]
 
     # Creating a train test split
     
