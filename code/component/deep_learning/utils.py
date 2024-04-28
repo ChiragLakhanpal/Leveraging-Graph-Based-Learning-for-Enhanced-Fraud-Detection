@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, \
     average_precision_score, confusion_matrix, precision_recall_curve, roc_curve, auc
 
@@ -26,7 +27,7 @@ def arg_parser():
     parser.add_argument('--hidden-size', type=int, default=128)
     parser.add_argument('--hidden-size-2', type=int, default=256)
     parser.add_argument('--output-dim', type=int, default=1)
-    parser.add_argument('--target', type=str, default="Is_Fraud")
+    parser.add_argument('--target', type=str, default="Is Fraud?")
     parser.add_argument('--cnn-input-size', type=int, default=1)
     parser.add_argument('--cnn-hidden-size', type=int, default=16)
     parser.add_argument('--cnn-out-size', type=int, default=32)
@@ -37,8 +38,10 @@ def arg_parser():
     parser.add_argument('--lstm-input-size', type=int, default=17)
     parser.add_argument('--lstm-n-layers', type=int, default=1)
     parser.add_argument('--cnn-lstm-out-size', type=int, default=64)
+    parser.add_argument('--sample-size', type=int, default=0.6)
     
     return parser.parse_known_args()[0]
+
     
 def save_test_data(X_test, y_test, data_path):
     """
