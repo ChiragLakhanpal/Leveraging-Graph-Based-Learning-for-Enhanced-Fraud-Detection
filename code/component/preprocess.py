@@ -240,9 +240,10 @@ def sample_data(df, sample_size, stratify_column=None, verbose=True):
             if verbose:
                 print(" + sampling data")
             df = df.sample(frac=sample_frac, random_state=42)
+            df = df.reset_index(drop=True)
         
         if verbose:
-            print(" + sampled data successfully. Number of samples: {}. Number of stratified samples: {}".format(df.shape[0], df[stratify_column].value_counts() if stratify_column else "N/A"))
+            print(" + sampled data successfully. Number of samples: {}. Number of stratified samples: {}".format(df.shape[0], df[stratify_column].value_counts().ser if stratify_column else "N/A"))
         
         return df
     
