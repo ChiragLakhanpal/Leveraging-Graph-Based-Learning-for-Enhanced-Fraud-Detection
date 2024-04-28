@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 import re
 from imblearn.over_sampling import SMOTE
+
 warnings.filterwarnings("ignore")
 
 # set random seed
@@ -155,6 +156,12 @@ def preprocess_data(dataframe,
     
     df = clean_columns_df(df, clean_columns, verbose)
  
+     # sample data -------------------------------------------------------------------------------------------------------
+    if sample:
+        if verbose: 
+            print("=  Sampling data... ")
+        df = sample_data(df, sample_size, stratify_column, verbose)
+        
     # casting datetime columns to datetime dtypes -----------------------------------------------------------------------
     if len(datetime_columns) > 0:
         if verbose: 
@@ -167,12 +174,6 @@ def preprocess_data(dataframe,
             print("=  Performing removal of unwanted columns... ")
         df = remove_columns_df(df, remove_columns, verbose)
         
-    # sample data -------------------------------------------------------------------------------------------------------
-    if sample:
-        if verbose: 
-            print("=  Sampling data... ")
-        df = sample_data(df, sample_size, stratify_column, verbose)
-
     # clean None (na) values --------------------------------------------------------------------------------------------
     if na_cleaner_mode != False: 
         if verbose: 
@@ -235,15 +236,14 @@ def sample_data(df, sample_size, stratify_column=None, verbose=True):
         if stratify_column is not None:
             if verbose:
                 print(" + sampling data with stratification")
-            df = df.groupby(stratify_column, group_keys=False).apply(lambda x: x.sample(frac=sample_frac,  random_state=42))
+            df = df.groupby(stratify_column, group_keys=False).apply(lambda x: x.sample(frac=sample_frac,  random_state=42)).reset_index(drop=True)
         else:
             if verbose:
                 print(" + sampling data")
-            df = df.sample(frac=sample_frac, random_state=42)
-            df = df.reset_index(drop=True)
+            df = df.sample(frac=sample_frac, random_state=42).reset_index(drop=True)
         
         if verbose:
-            print(" + sampled data successfully. Number of samples: {}. Number of stratified samples: {}".format(df.shape[0], df[stratify_column].value_counts().ser if stratify_column else "N/A"))
+            print(" + sampled data successfully. Number of samples: {}. Number of stratified samples: {}".format(df.shape[0], df[stratify_column].value_counts() if stratify_column else "N/A"))
         
         return df
     
