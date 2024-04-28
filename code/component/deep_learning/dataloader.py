@@ -2,6 +2,8 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from sklearn.preprocessing import StandardScaler
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 class CustomDataset(Dataset):
     """Custom dataset for tabular data."""
     def __init__(self, X, y):
@@ -32,6 +34,18 @@ class CustomDataLoader:
         self.device = device
 
     def prepare_train_val_loader(self, X_train, y_train, X_val, y_val):
+        """
+        Prepares the data loaders for training and validation data sets.
+
+        :param X_train: Input features for the training data.
+        :param y_train: Target labels for the training data.
+        :param X_val: Input features for the validation data.
+        :param y_val: Target labels for the validation data.
+
+        :returns train_loader: Data loader for the training data.
+        :returns val_loader: Data loader for the validation data.
+        :returns input_dim: The dimension of the input features.
+        """
         scaler = StandardScaler()
         X_train = scaler.fit_transform(X_train)
         X_val = scaler.transform(X_val)
@@ -50,9 +64,18 @@ class CustomDataLoader:
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False)
 
-        return train_loader, val_loader
+        return train_loader, val_loader, X_train.shape[1]
 
     def prepare_test_loader(self, X_test, y_test):
+        """
+        Prepares the data loader for the test data set.
+
+        :param X_test: Input features for the test data.
+        :param y_test: Target labels for the test data.
+
+        :returns test_loader: Data loader for the test data.
+        :returns input_dim: The dimension of the input features.
+        """
         scaler = StandardScaler()
         X_test = scaler.fit_transform(X_test)
 
@@ -65,5 +88,5 @@ class CustomDataLoader:
 
         test_loader = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False)
 
-        return test_loader
+        return test_loader, X_test.shape[1]
     
