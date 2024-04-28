@@ -225,10 +225,7 @@ def sample_data(df, sample_size, stratify_column=None, verbose=True):
     try:
         if isinstance(sample_size, float) and 0.0 <= sample_size <= 1.0:
             sample_frac = sample_size
-            sample_n = None
-        elif isinstance(sample_size, int) and sample_size > 1:
-            sample_frac = None
-            sample_n = sample_size
+
         else:
             raise ValueError(" - Invalid sample_size. Provide either a percentage (0.0-1.0)")
         
@@ -238,11 +235,11 @@ def sample_data(df, sample_size, stratify_column=None, verbose=True):
         if stratify_column is not None:
             if verbose:
                 print(" + sampling data with stratification")
-            df = df.groupby(stratify_column, group_keys=False).apply(lambda x: x.sample(frac=sample_frac, n=sample_n, random_state=42))
+            df = df.groupby(stratify_column, group_keys=False).apply(lambda x: x.sample(frac=sample_frac,  random_state=42))
         else:
             if verbose:
                 print(" + sampling data")
-            df = df.sample(frac=sample_frac, n=sample_n, random_state=42)
+            df = df.sample(frac=sample_frac, random_state=42)
         
         if verbose:
             print(" + sampled data successfully. Number of samples: {}. Number of stratified samples: {}".format(df.shape[0], df[stratify_column].value_counts() if stratify_column else "N/A"))
