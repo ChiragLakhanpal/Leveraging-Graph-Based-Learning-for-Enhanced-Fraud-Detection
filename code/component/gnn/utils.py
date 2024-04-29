@@ -19,7 +19,7 @@ def arg_parser():
     """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--epochs', type=int, default=300)
+    parser.add_argument('--epochs', type=int, default=1000)
     parser.add_argument('--batch-size', type=int, default=512)
     parser.add_argument('--hidden-size', type=int, default=16)
     parser.add_argument('--learning-rate', type=int, default=0.01)

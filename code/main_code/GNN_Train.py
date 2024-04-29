@@ -14,7 +14,7 @@ import torch.optim as optim
 import sys
 sys.path.append('../component')
 
-from preprocess import preprocess_data
+from preprocess import *
 from gnn.utils import *
 from gnn.model import *
 
@@ -32,6 +32,10 @@ torch.manual_seed(seed)
 if torch.cuda.is_available():
     torch.cuda.manual_seed(seed)
 
+# System path
+parent_dir = os.getcwd()
+data_path = os.path.join(parent_dir, '../../Data/card_transaction.v1.csv')
+
 # Set device as cpu 
 
 device = torch.device('cpu')
@@ -44,7 +48,7 @@ def main():
 
     # Read the data and run the preprocess function
 
-    data = pd.read_csv('../../Data/card_transaction.v1.csv')
+    data = read_data(data_path=data_path)
 
     data = preprocess_data(dataframe=data,
                     detect_binary=True,
