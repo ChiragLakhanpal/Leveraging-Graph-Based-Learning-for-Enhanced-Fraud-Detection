@@ -35,7 +35,7 @@ def arg_parser():
     parser.add_argument('--kernel-size-pool', type=int, default=2)
     parser.add_argument('--stride', type=int, default=1)
     parser.add_argument('--padding', type=int, default=1)
-    parser.add_argument('--lstm-input-size', type=int, default=17)
+    parser.add_argument('--lstm-input-size', type=int, default=14)
     parser.add_argument('--lstm-n-layers', type=int, default=1)
     parser.add_argument('--cnn-lstm-out-size', type=int, default=64)
     parser.add_argument('--sample-size', type=int, default=0.6)
