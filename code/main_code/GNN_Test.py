@@ -15,7 +15,7 @@ import sys
 
 sys.path.append('../component')
 
-from preprocess import preprocess_data
+from preprocess import *
 from gnn.utils import *
 from gnn.model import *
 
@@ -32,6 +32,10 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 if torch.cuda.is_available():
     torch.cuda.manual_seed(seed)
+    
+# System path
+parent_dir = os.getcwd()
+data_path = os.path.join(parent_dir, '../../Data/card_transaction.v1.csv')
 
 # Set device as cpu 
 
@@ -45,7 +49,7 @@ def main():
 
     # Read the data and use the preprocess function for preprocessing
 
-    data = pd.read_csv('/home/ec2-user/DS_Capstone/Data/card_transaction.v1.csv')
+    data = read_data(data_path=data_path)
 
     data = preprocess_data(dataframe=data,
                            detect_binary=True,
