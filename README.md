@@ -81,3 +81,32 @@ The component code contains 3 folders for utils named classical_machine_learning
   - model.py : Contains the model class for RGCN
   - utils.py : Contains utils such as argparse function, metrics, training and predict class etc.
 - preprocess.py : Contains a standardized preprocessing code to preprocess any dataset.
+
+The main_code contains 3 folders named classical_machine_learning, deep_learning, GNN.
+
+- classical_machine_learning:
+  - models : Contains all the model pickle files saved after training.
+  - CatBoost_train.py : Contains the code to train and test the CatBoost Model.
+  - LightGBM_train.py : Contains the code to train and test the LightGBM Model.
+  - Logistic_train.py : Contains the code to train and test the Logistic Regression Model.
+  - Random_Forest_train.py : Contains the code to train and test the Random Forest Model.
+  - Xgboost_train.py : Contains the code to train and test the XGBoost Model.
+  - Inference.py : Run all models to get the evaluation metrics and plots.
+ 
+- deep_learning:
+  - models : Contains the .pt file of models saved after training.
+  - plots : Contains the saved plots.
+  - CNN_Train.py : Contains the code to train the CNN model.
+  - CNN_Test.py : Contains the code to test the CNN model.
+  - LSTM_Train.py : Contains the code to train the LSTM model.
+  - LSTM_Test.py : Contains the code to test the LSTM model.
+  - CNN-LSTM_Train.py : Contains the code to train the CNN-LSTM model.
+  - CNN-LSTM_Test.py : Contains the code to test the CNN-LSTM model.
+  - Inference.py : Run all models to get the evaluation metrics and plots.
+
+- GNN:
+  - models : Contains the .pt file of models saved after training.
+  - plots : Contains the saved plots.
+  - GNN_Train.py : Contains the code to train the GNN model.
+  - GNN_Test.py : Contains the code to test the GNN model.
+  - Inference.py : Run all models to get the evaluation metrics and plots.
