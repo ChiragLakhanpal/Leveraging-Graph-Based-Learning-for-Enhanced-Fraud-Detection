@@ -1,27 +1,27 @@
-# Capstone
-
 # Leveraging Graph-Based Learning for Credit Card Fraud Detection:  A comparative study of traditional, deep learning and graph-based approaches.
+
+## Abstract
 
 Anomaly detection in financial transactions is crucial for preventing fraud, money laundering, and other illicit activities. Credit card fraud presents a substantial challenge, resulting in significant financial losses for businesses and individuals annually. Our research aims to explore the potential of Graph Neural Networks (GNNs) in enhancing performance in fraud detection by leveraging their capacity to analyze transaction patterns. We conduct a comparative study of Graph Neural Networks (GNNs), traditional machine learning models, and deep learning models for detecting fraud in credit card transactions. 
 
-- [Introduction](#introduction)
 - [Dataset](#dataset)
 - [Models](#models)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Results](#results)
-- [Contributing](#contributing)
-- [License](#license)
+- [Files Overview](#filesoverview)
 
-## Introduction
-
-Anomaly detection in financial transactions is crucial for preventing fraud, money laundering, and other illicit activities. This project explores various approaches to tackle this problem, including Graph Neural Networks (GNNs), traditional machine learning models such as XGBoost and Random Forest, and deep learning models like Convolutional Neural Networks (CNNs) and Long Short Term Memory (LSTM).
 
 ## Dataset
 
 The dataset used in this project is a synthetic credit card fraud detection dataset provided by IBM. The dataset contains around 24 million transaction records with 12 fields. Among these transactions, 0.1% of the transactions account to fradualent transactions.
 
 Link to the github folder of the dataset: https://github.com/IBM/TabFormer/tree/main
+
+The dataset is contained in the  ./data/credit_card folder of the github. To extract the .csv file from transaction.tgz, run the following command:
+
+```
+   python train_xgboost.py --path-to-dir /path/to/dataset --verbose --learning-rate 0.1 --n-estimators 100
+```
 
 ## Models
 
@@ -57,36 +57,21 @@ The project provides scripts for training and evaluating different models. Here 
    python train_xgboost.py --path-to-dir /path/to/dataset --verbose --learning-rate 0.1 --n-estimators 100
    ```
 
-2. Train Random Forest model:
+2. Train GNN model:
    ```
-   python train_random_forest.py --path-to-dir /path/to/dataset --verbose --n-estimators 100 --max-depth 5
-   ```
-
-3. Train GNN model:
-   ```
-   python train_gnn.py --path-to-dir /path/to/dataset --verbose --hidden-dim 64 --n-layers 3 --dropout 0.5
-   ```
-
-4. Train CNN model:
-   ```
-   python train_cnn.py --path-to-dir /path/to/dataset --verbose --n-filters 64 --kernel-size 3 --pool-size 2
-   ```
-
-5. Train RNN model:
-   ```
-   python train_rnn.py --path-to-dir /path/to/dataset --verbose --hidden-dim 128 --n-layers 2 --dropout 0.3
+   python GNN_Train.py --path-to-dir /path/to/dataset --verbose --epochs 100 --hidden-dim 64 --n-layers 3 
    ```
 
 Replace `/path/to/dataset` with the actual path to your dataset directory. You can also adjust the hyperparameters and options according to your requirements.
 
-## Results
 
-The evaluation results and comparisons of different models will be provided in the `results` directory. The results will include metrics such as accuracy, precision, recall, F1-score, and ROC-AUC score. Additionally, visualizations and analysis of the results will be presented to gain insights into the performance of each model.
+## Files Overview
 
-## Contributing
+The code folder contains two subfolders component and main_code:
 
-Contributions to this project are welcome. If you find any issues or have suggestions for improvements, please open an issue or submit a pull request. Make sure to follow the existing code style and guidelines.
+The component code contains 3 utils folders named classical_machine_learning, deep_learning and gnn.
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
+- classical_machine_learning:
+  -- utils.py : This file contains all the utils necessary for classical models
+- deep_learning:
+ --
