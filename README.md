@@ -20,7 +20,7 @@ Link to the github folder of the dataset: https://github.com/IBM/TabFormer/tree/
 The dataset is contained in the  ./data/credit_card folder of the github. To extract the .csv file from transaction.tgz, run the following command:
 
 ```
-  tar -xvf <transaction.tgz>
+  tar -xvf transaction.tgz
 ```
 
 ## Models
