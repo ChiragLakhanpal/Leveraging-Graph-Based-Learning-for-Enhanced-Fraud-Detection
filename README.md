@@ -17,7 +17,7 @@ This project aims to conduct a comparative study of Graph Neural Networks (GNNs)
 
 ## Introduction
 
-Anomaly detection in financial transactions is crucial for preventing fraud, money laundering, and other illicit activities. This project explores various approaches to tackle this problem, including Graph Neural Networks (GNNs), traditional machine learning models such as XGBoost and Random Forest, and deep learning models like Convolutional Neural Networks (CNNs) and Recurrent Neural Networks (RNNs).
+Anomaly detection in financial transactions is crucial for preventing fraud, money laundering, and other illicit activities. This project explores various approaches to tackle this problem, including Graph Neural Networks (GNNs), traditional machine learning models such as XGBoost and Random Forest, and deep learning models like Convolutional Neural Networks (CNNs) and Long Short Term Memory (LSTM).
 
 ## Dataset
 
@@ -31,7 +31,7 @@ The following models are implemented and evaluated in this project:
 2. XGBoost
 3. Random Forest
 4. Convolutional Neural Networks (CNNs)
-5. Recurrent Neural Networks (RNNs)
+5. Long Short Term Memory (LSTM)
 
 Each model is trained and evaluated using appropriate techniques and metrics specific to anomaly detection tasks.
 
