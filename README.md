@@ -1,10 +1,8 @@
 # Capstone
 
-# Anomaly Detection in Financial Transactions: GNN vs Traditional Models vs Deep Learning Models
+# Leveraging Graph-Based Learning for Credit Card Fraud Detection:  A comparative study of traditional, deep learning and graph-based approaches.
 
-This project aims to conduct a comparative study of Graph Neural Networks (GNNs), traditional machine learning models, and deep learning models for detecting anomalies in financial transactions. The goal is to evaluate the performance of these approaches and provide insights into their effectiveness in identifying fraudulent or suspicious activities.
-
-## Table of Contents
+Anomaly detection in financial transactions is crucial for preventing fraud, money laundering, and other illicit activities. Credit card fraud presents a substantial challenge, resulting in significant financial losses for businesses and individuals annually. Our research aims to explore the potential of Graph Neural Networks (GNNs) in enhancing performance in fraud detection by leveraging their capacity to analyze transaction patterns. We conduct a comparative study of Graph Neural Networks (GNNs), traditional machine learning models, and deep learning models for detecting fraud in credit card transactions. 
 
 - [Introduction](#introduction)
 - [Dataset](#dataset)
@@ -21,19 +19,20 @@ Anomaly detection in financial transactions is crucial for preventing fraud, mon
 
 ## Dataset
 
-The dataset used in this project consists of labeled financial transaction records, where each transaction is characterized by a set of features and a corresponding label indicating whether it is anomalous or not. The dataset is not included in this repository due to privacy and confidentiality reasons. However, you can replace the dataset with your own or use a publicly available dataset with similar characteristics.
+The dataset used in this project is a synthetic credit card fraud detection dataset provided by IBM. The dataset contains around 24 million transaction records with 12 fields. Among these transactions, 0.1% of the transactions account to fradualent transactions.
+
+Link to the github folder of the dataset: https://github.com/IBM/TabFormer/tree/main
 
 ## Models
 
 The following models are implemented and evaluated in this project:
 
-1. Graph Neural Networks (GNNs)
-2. XGBoost
-3. Random Forest
-4. Convolutional Neural Networks (CNNs)
-5. Long Short Term Memory (LSTM)
+1. Graph Neural Netorks - Relational Graph Convolution Network
+2. Classical Models - Logistic Regression, Random Forest, LightGBM, CatBoost, XGBoost
+3. Deep Learning Models - Convolutional Neural Networks (CNNs), Long Short Term Memory (LSTM), Hybrid architecture using CNN and LSTM
 
-Each model is trained and evaluated using appropriate techniques and metrics specific to anomaly detection tasks.
+Each model is trained and evaluated using appropriate techniques and metrics specific to fraud detection tasks.
+
 
 ## Installation
 
@@ -41,7 +40,7 @@ To set up the project environment, follow these steps:
 
 1. Clone the repository:
    ```
-   git clone https://github.com/your-username/anomaly-detection-financial-transactions.git
+   git clone https://github.com/ChiragLakhanpal/Capstone.git
    ```
 
 2. Install the required dependencies:
