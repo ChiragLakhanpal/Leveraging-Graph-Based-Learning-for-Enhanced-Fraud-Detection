@@ -52,15 +52,22 @@ To set up the project environment, follow these steps:
 
 The project provides scripts for training and evaluating different models. Here are some examples of how to use the scripts:
 
-1. Train XGBoost model:
+1. Run preprocess.py:
+  ```
+  python preprocess.py --data_path /home/ec2-user/Capstone/Sampled\ Dataset.csv --test_size 0.2 --no-val_data --val_size 0.2 --detect_binary --no-numeric_dtype --one_hot --na_cleaner_mode "remove row" --no- 
+  normalize --no-balance --sample --sample_size 0.2 --stratify_column 'Is Fraud?' --datetime_columns Time --clean_columns Amount --consider_as_categorical 'Use Chip,Merchant City,Merchant State,Zip,MCC,Errors?'
+  --target 'Is Fraud?' --verbose
+  ```
+2. Train XGBoost model:
    ```
    python train_xgboost.py --path-to-dir /path/to/dataset --verbose --learning-rate 0.1 --n-estimators 100
    ```
 
-2. Train GNN model:
+3. Train GNN model:
    ```
    python GNN_Train.py --path-to-dir /path/to/dataset --verbose --epochs 100 --hidden-dim 64 --n-layers 3 
    ```
+
 
 Replace `/path/to/dataset` with the actual path to your dataset directory. You can also adjust the hyperparameters and options according to your requirements.
 
