@@ -74,9 +74,9 @@ The component code contains 3 folders for utils named classical_machine_learning
 - classical_machine_learning:
   - utils.py : This file contains all the utils necessary for classical models.
 - deep_learning:
- - dataloader.py : Contains the code for creating a custom dataset and dataloader.
- - models.py : Contains the model classes for deep learning.
- - utils.py : Contains utils such as argparse function, metrics, training and predict class etc.
+  - dataloader.py : Contains the code for creating a custom dataset and dataloader.
+  - models.py : Contains the model classes for deep learning.
+  - utils.py : Contains utils such as argparse function, metrics, training and predict class etc.
 - gnn:
   - model.py : Contains the model class for RGCN
   - utils.py : Contains utils such as argparse function, metrics, training and predict class etc.
