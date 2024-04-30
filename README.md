@@ -8,7 +8,7 @@ Anomaly detection in financial transactions is crucial for preventing fraud, mon
 - [Models](#models)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Files Overview](#filesoverview)
+- [Files Overview](#files%20overview)
 
 
 ## Dataset
@@ -20,7 +20,7 @@ Link to the github folder of the dataset: https://github.com/IBM/TabFormer/tree/
 The dataset is contained in the  ./data/credit_card folder of the github. To extract the .csv file from transaction.tgz, run the following command:
 
 ```
-   python train_xgboost.py --path-to-dir /path/to/dataset --verbose --learning-rate 0.1 --n-estimators 100
+  tar -xvf <transaction.tgz>
 ```
 
 ## Models
