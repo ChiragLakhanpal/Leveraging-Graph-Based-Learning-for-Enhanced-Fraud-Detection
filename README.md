@@ -69,9 +69,15 @@ Replace `/path/to/dataset` with the actual path to your dataset directory. You c
 
 The code folder contains two subfolders component and main_code:
 
-The component code contains 3 utils folders named classical_machine_learning, deep_learning and gnn.
+The component code contains 3 folders for utils named classical_machine_learning, deep_learning, gnn and a precprocess file.
 
 - classical_machine_learning:
-  - utils.py : This file contains all the utils necessary for classical models
+  - utils.py : This file contains all the utils necessary for classical models.
 - deep_learning:
- --
+ - dataloader.py : Contains the code for creating a custom dataset and dataloader.
+ - models.py : Contains the model classes for deep learning.
+ - utils.py : Contains utils such as argparse function, metrics, training and predict class etc.
+- gnn:
+  - model.py : Contains the model class for RGCN
+  - utils.py : Contains utils such as argparse function, metrics, training and predict class etc.
+- preprocess.py : Contains a standardized preprocessing code to preprocess any dataset.
