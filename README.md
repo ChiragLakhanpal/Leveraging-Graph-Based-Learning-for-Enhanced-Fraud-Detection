@@ -72,6 +72,6 @@ The code folder contains two subfolders component and main_code:
 The component code contains 3 utils folders named classical_machine_learning, deep_learning and gnn.
 
 - classical_machine_learning:
-  -- utils.py : This file contains all the utils necessary for classical models
+  - utils.py : This file contains all the utils necessary for classical models
 - deep_learning:
  --
