@@ -8,7 +8,7 @@ Anomaly detection in financial transactions is crucial for preventing fraud, mon
 - [Models](#models)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Files Overview](#files%20overview)
+- [Files Overview](#files-overview)
 
 
 ## Dataset
@@ -68,10 +68,7 @@ The project provides scripts for training and evaluating different models. Here 
    python GNN_Train.py --path-to-dir /path/to/dataset --verbose --epochs 100 --hidden-dim 64 --n-layers 3 
    ```
 
-For thorough documentation, please visit [individual directories](#https://github.com/ChiragLakhanpal/Capstone/tree/main/code/main_code) to train and infer the models.
-
-
-
+For thorough documentation, please visit [individual directories](https://github.com/ChiragLakhanpal/Capstone/tree/main/code/main_code) to train and infer the models.
 
 Replace `/path/to/dataset` with the actual path to your dataset directory. You can also adjust the hyperparameters and options according to your requirements.
 
@@ -87,10 +84,10 @@ The component code contains 3 folders for utils named classical_machine_learning
 - deep_learning:
   - dataloader.py : Contains the code for creating a custom dataset and dataloader.
   - models.py : Contains the model classes for deep learning.
-  - utils.py : Contains utils such as argparse function, metrics, training and predict class etc.
+  - utils.py : Contains utils such as argparse function, metrics, training and predict class, etc.
 - gnn:
   - model.py : Contains the model class for RGCN
-  - utils.py : Contains utils such as argparse function, metrics, training and predict class etc.
+  - utils.py : Contains utils such as argparse function, metrics, training and predict class, etc.
 - preprocess.py : Contains a standardized preprocessing code to preprocess any dataset.
 
 The main_code contains 3 folders named classical_machine_learning, deep_learning, GNN.
