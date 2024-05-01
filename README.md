@@ -13,21 +13,21 @@ Anomaly detection in financial transactions is crucial for preventing fraud, mon
 
 ## Dataset
 
-The dataset used in this project is a synthetic credit card fraud detection dataset provided by IBM. The dataset contains around 24 million transaction records with 12 fields. Among these transactions, 0.1% of the transactions account to fradualent transactions.
+The dataset used in this project is a synthetic credit card fraud detection dataset provided by IBM. The dataset contains around 24 million transaction records with 12 fields. Among these transactions, 0.1% of the transactions account to fraudulent transactions.
 
-Link to the github folder of the dataset: https://github.com/IBM/TabFormer/tree/main
+Link to the GitHub folder of the dataset: https://github.com/IBM/TabFormer/tree/main
 
-The dataset is contained in the  ./data/credit_card folder of the github. To extract the .csv file from transaction.tgz, run the following command:
+The dataset is contained in the  ./data/credit_card folder of the GitHub. To extract the .csv file from transaction.tgz, run the following command:
 
 ```
-  tar -xvf transaction.tgz
+  tar -xvf <path/to/compressed dataset>
 ```
 
 ## Models
 
 The following models are implemented and evaluated in this project:
 
-1. Graph Neural Netorks - Relational Graph Convolution Network
+1. Graph Neural Networks - Relational Graph Convolution Network
 2. Classical Models - Logistic Regression, Random Forest, LightGBM, CatBoost, XGBoost
 3. Deep Learning Models - Convolutional Neural Networks (CNNs), Long Short Term Memory (LSTM), Hybrid architecture using CNN and LSTM
 
@@ -54,9 +54,9 @@ The project provides scripts for training and evaluating different models. Here 
 
 1. Run preprocess.py:
   ```
-  python preprocess.py --data_path /home/ec2-user/Capstone/Sampled\ Dataset.csv --test_size 0.2 --no-val_data --val_size 0.2 --detect_binary --no-numeric_dtype --one_hot --na_cleaner_mode "remove row" --no- 
-  normalize --no-balance --sample --sample_size 0.2 --stratify_column 'Is Fraud?' --datetime_columns Time --clean_columns Amount --consider_as_categorical 'Use Chip,Merchant City,Merchant State,Zip,MCC,Errors?'
-  --target 'Is Fraud?' --verbose
+  python preprocess.py --data_path /path/to/dataset --test_size 0.2 --no-val_data --val_size 0.2 --detect_binary --no-numeric_dtype --one_hot --na_cleaner_mode "remove row" --no- 
+  normalize --no-balance --sample --sample_size 0.2 --stratify_column '<target variable>' --datetime_columns Time --clean_columns Amount --consider_as_categorical '<columns separated by columns>'
+  --target 'target variable' --verbose
   ```
 2. Train XGBoost model:
    ```
@@ -67,6 +67,10 @@ The project provides scripts for training and evaluating different models. Here 
    ```
    python GNN_Train.py --path-to-dir /path/to/dataset --verbose --epochs 100 --hidden-dim 64 --n-layers 3 
    ```
+
+For thorough documentation, please visit [individual directories](#https://github.com/ChiragLakhanpal/Capstone/tree/main/code/main_code) to train and infer the models.
+
+
 
 
 Replace `/path/to/dataset` with the actual path to your dataset directory. You can also adjust the hyperparameters and options according to your requirements.
