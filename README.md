@@ -75,46 +75,14 @@ Replace `/path/to/dataset` with the actual path to your dataset directory. You c
 
 ## Files Overview
 
-The code folder contains two subfolders component and main_code:
+The code folder contains two subfolders [component](https://github.com/ChiragLakhanpal/Capstone/tree/main/code/component) and [main_code](https://github.com/ChiragLakhanpal/Capstone/tree/main/code/main_code). 
 
-The component code contains 3 folders for utils named classical_machine_learning, deep_learning, gnn and a precprocess file.
+The `code` folder contains two subfolders: `component` and `main_code`.
 
-- classical_machine_learning:
-  - utils.py : This file contains all the utils necessary for classical models.
-- deep_learning:
-  - dataloader.py : Contains the code for creating a custom dataset and dataloader.
-  - models.py : Contains the model classes for deep learning.
-  - utils.py : Contains utils such as argparse function, metrics, training and predict class, etc.
-- gnn:
-  - model.py : Contains the model class for RGCN
-  - utils.py : Contains utils such as argparse function, metrics, training and predict class, etc.
-- preprocess.py : Contains a standardized preprocessing code to preprocess any dataset.
+1. `component`: This folder contains utility functions, helper classes, and preprocessing code that are used across different models in the project. It has three subfolders for classical machine learning, deep learning, and graph neural networks (GNN), as well as a standalone preprocessing file.
 
-The main_code contains 3 folders named classical_machine_learning, deep_learning, GNN.
+2. `main_code`: This folder contains the main implementation code for training, testing, and running inference on various models. It is organized into three subfolders: `classical_machine_learning`, `deep_learning`, and `GNN`. Each subfolder contains scripts for training and testing specific models, as well as an `Inference.py` script for running all models and obtaining evaluation metrics and plots.
 
-- classical_machine_learning:
-  - models : Contains all the model pickle files saved after training.
-  - CatBoost_train.py : Contains the code to train and test the CatBoost Model.
-  - LightGBM_train.py : Contains the code to train and test the LightGBM Model.
-  - Logistic_train.py : Contains the code to train and test the Logistic Regression Model.
-  - Random_Forest_train.py : Contains the code to train and test the Random Forest Model.
-  - Xgboost_train.py : Contains the code to train and test the XGBoost Model.
-  - Inference.py : Run all models to get the evaluation metrics and plots.
- 
-- deep_learning:
-  - models : Contains the .pt file of models saved after training.
-  - plots : Contains the saved plots.
-  - CNN_Train.py : Contains the code to train the CNN model.
-  - CNN_Test.py : Contains the code to test the CNN model.
-  - LSTM_Train.py : Contains the code to train the LSTM model.
-  - LSTM_Test.py : Contains the code to test the LSTM model.
-  - CNN-LSTM_Train.py : Contains the code to train the CNN-LSTM model.
-  - CNN-LSTM_Test.py : Contains the code to test the CNN-LSTM model.
-  - Inference.py : Run all models to get the evaluation metrics and plots.
+The `component` folder provides reusable code components that are utilized by the scripts in the `main_code` folder, promoting code modularity and reducing duplication. The `main_code` folder focuses on the core functionality of training, testing, and evaluating different models for the comparative study.
 
-- GNN:
-  - models : Contains the .pt file of models saved after training.
-  - plots : Contains the saved plots.
-  - GNN_Train.py : Contains the code to train the GNN model.
-  - GNN_Test.py : Contains the code to test the GNN model.
-  - Inference.py : Run all models to get the evaluation metrics and plots.
+Please visit individual directories for an extensive documentation. 
