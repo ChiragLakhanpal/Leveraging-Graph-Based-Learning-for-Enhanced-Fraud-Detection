@@ -45,7 +45,7 @@ To set up the project environment, follow these steps:
 
 2. Install the required dependencies:
    ```
-   pip install -r requirements.txt
+   pip install -r code/requirements.txt
    ```
 
 ## Usage
